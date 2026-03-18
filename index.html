@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>KunBy</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#0D1B2A;--navy2:#152535;--navy3:#1E3448;
+  --gold:#F5A623;--green:#10B981;--purple:#6366F1;--danger:#EF4444;
+  --white:#F0F4F8;--muted:#8899AA;--border:rgba(255,255,255,0.08);
+  --r:16px;--r-sm:12px;
+}
+html,body{height:100%;overflow:hidden;background:var(--navy);color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px}
+#app{height:100%;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--navy);overflow:hidden}
+.screen.active{display:flex}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+/* SPLASH */
+.splash-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;height:100%}
+.splash-ico{width:96px;height:96px;background:var(--gold);border-radius:26px;display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 0 50px rgba(245,166,35,.45)}
+.splash-nm{font-size:34px;font-weight:900;letter-spacing:-1px}.splash-nm span{color:var(--gold)}
+.splash-tag{color:var(--muted);font-size:13px}
+.sdots{display:flex;gap:8px;margin-top:6px}
+.sdot{width:26px;height:5px;border-radius:3px;background:var(--border)}
+.sdot.on{background:var(--gold)}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;min-height:52px;border-bottom:1px solid var(--border);flex-shrink:0}
+.tb-title{font-weight:800;font-size:16px}
+.back-btn{background:none;border:none;color:var(--white);font-size:22px;cursor:pointer;padding:4px 8px 4px 0}
+
+/* BNAV */
+.bnav{display:flex;background:var(--navy2);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700}
+.nb .bi{font-size:20px}
+.nb.on{color:var(--gold)}
+
+/* LANG */
+.lang-bar{display:flex;gap:6px;justify-content:center;padding:8px 0 4px}
+.lbtn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.lbtn.on{background:var(--gold);color:#000;border-color:var(--gold)}
+.hlb{padding:4px 9px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.hlb.on{background:var(--gold);color:#000;border-color:var(--gold)}
+
+/* AUTH */
+.auth-scroll{flex:1;overflow-y:auto}
+.auth-inner{padding:24px 20px;max-width:400px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.auth-logo{font-size:30px;font-weight:900;text-align:center;letter-spacing:-1px}.auth-logo span{color:var(--gold)}
+.auth-title{font-size:20px;font-weight:800;text-align:center}
+.inp{width:100%;background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--white);font-family:inherit;font-size:15px;font-weight:500;padding:13px 16px;outline:none;transition:border-color .2s;resize:none}
+.inp:focus{border-color:var(--gold)}
+.inp::placeholder{color:var(--muted)}
+.inp-row{position:relative;display:flex;align-items:center}
+.inp-pre{position:absolute;left:14px;color:var(--muted);font-weight:700;pointer-events:none}
+.inp-ph{padding-left:52px}
+.eye{position:absolute;right:14px;cursor:pointer;font-size:18px;user-select:none}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+.err{color:var(--danger);font-size:12px;font-weight:700;display:none}
+.err.show{display:block}
+.auth-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.btn{width:100%;padding:14px;border-radius:var(--r);border:none;background:var(--gold);color:#000;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer}
+.btn:active{opacity:.85}
+.btn-link{background:none;border:none;color:var(--gold);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline}
+.otp-inp{letter-spacing:8px;text-align:center;font-size:22px;font-weight:900}
+
+/* BTNS */
+.bsm{padding:7px 14px;border-radius:20px;border:none;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:.15s}
+.bsm.gold{background:rgba(245,166,35,.15);color:var(--gold)}
+.bsm.green{background:rgba(16,185,129,.15);color:var(--green)}
+.bsm.danger{background:rgba(239,68,68,.1);color:var(--danger)}
+.bsm.purple{background:rgba(99,102,241,.15);color:#818CF8}
+.bsm.gray{background:rgba(255,255,255,.08);color:var(--muted)}
+
+/* CARDS */
+.card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin:0 16px 12px}
+.sec{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px 20px 4px}
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800}
+.badge.gold{background:rgba(245,166,35,.15);color:var(--gold)}
+.badge.green{background:rgba(16,185,129,.15);color:var(--green)}
+.badge.purple{background:rgba(99,102,241,.15);color:#818CF8}
+.badge.gray{background:rgba(255,255,255,.07);color:var(--muted)}
+.badge.danger{background:rgba(239,68,68,.1);color:var(--danger)}
+.no-data{text-align:center;padding:48px 24px;color:var(--muted)}
+.nd-ico{font-size:40px;margin-bottom:12px}
+
+/* HOME */
+.h-top{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px 6px}
+.h-greet{font-size:13px;color:var(--muted)}
+.h-name{font-size:22px;font-weight:900}
+.stats-row{display:flex;padding:0 16px 12px}
+.stat-box{flex:1;background:var(--navy2);border:1px solid var(--border);text-align:center;padding:12px 8px}
+.stat-box:first-child{border-radius:var(--r) 0 0 var(--r)}.stat-box:last-child{border-radius:0 var(--r) var(--r) 0}.stat-box:not(:last-child){border-right:none}
+.s-val{font-size:20px;font-weight:900;color:var(--gold)}
+.s-lbl{font-size:11px;color:var(--muted);margin-top:2px;font-weight:700}
+.ready-row{margin:0 16px 12px;background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tog{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.tog-sl{position:absolute;inset:0;background:var(--border);border-radius:13px;cursor:pointer;transition:.3s}
+.tog-sl::before{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;left:3px;top:3px;transition:.3s}
+input:checked+.tog-sl{background:var(--green)}
+input:checked+.tog-sl::before{transform:translateX(20px)}
+.h-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 12px}
+.hcard{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:18px 14px;cursor:pointer}
+.hcard:active{opacity:.8}
+.hc-ico{font-size:28px;margin-bottom:8px}
+.hc-t{font-weight:800;font-size:15px}
+.hc-s{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* SEARCH */
+.search-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--white);font-family:inherit;font-size:15px}
+.search-bar input::placeholder{color:var(--muted)}
+.filter-row{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.filter-row::-webkit-scrollbar{display:none}
+.fchip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.fchip.on{background:rgba(245,166,35,.15);color:var(--gold);border-color:var(--gold)}
+.uc{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.uc:active{background:var(--navy2)}
+.uc-av{width:46px;height:46px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#000;flex-shrink:0}
+.uc-info{flex:1;min-width:0}
+.uc-name{font-weight:800;font-size:14px}
+.uc-job{font-size:12px;color:var(--muted);margin-top:1px}
+
+/* USER DETAIL */
+.ud-hd{text-align:center;padding:20px 16px 12px}
+.ud-av{width:80px;height:80px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#000;margin:0 auto 10px}
+.ud-btns{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.pf-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.pf-row:last-child{border-bottom:none}
+.pf-lbl{font-size:13px;color:var(--muted)}
+.pf-val{font-size:13px;font-weight:700;text-align:right;max-width:65%}
+
+/* JOB CARD */
+.job-card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin:6px 16px}
+.jc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.jc-title{font-weight:800;font-size:14px}
+.jc-from{font-size:12px;color:var(--muted);margin-top:2px}
+.jc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.jc-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* JOB MSG CARD */
+.msg-job{max-width:90%;margin:4px 0}
+.msg-job.out{align-self:flex-end}
+.msg-job.in{align-self:flex-start}
+.jmc{border-radius:16px;overflow:hidden;border:1.5px solid var(--border)}
+.msg-job.out .jmc{border-color:rgba(245,166,35,.35)}
+.jmc-hd{padding:10px 14px 8px;background:rgba(245,166,35,.1);display:flex;align-items:center;gap:8px}
+.msg-job.in .jmc-hd{background:rgba(255,255,255,.05)}
+.jmc-t{font-size:13px;font-weight:800;flex:1}
+.jmc-st{font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.jmc-st.p{background:rgba(245,166,35,.2);color:var(--gold)}
+.jmc-st.a{background:rgba(16,185,129,.2);color:var(--green)}
+.jmc-st.d{background:rgba(99,102,241,.2);color:#818CF8}
+.jmc-st.c{background:rgba(239,68,68,.1);color:var(--danger)}
+.jmc-st.w{background:rgba(16,185,129,.1);color:var(--green)}
+.jmc-meta{padding:8px 14px;display:flex;flex-wrap:wrap;gap:5px;background:rgba(0,0,0,.1)}
+.jmc-btns{display:flex;border-top:1px solid var(--border)}
+.jmc-btn{flex:1;padding:10px 6px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:800;background:transparent}
+.jmc-btn:not(:last-child){border-right:1px solid var(--border)}
+.jmc-btn.accept{color:var(--green)}
+.jmc-btn.reject{color:var(--danger)}
+.jmc-btn.finish{color:#818CF8}
+.jmc-btn.confirm{color:var(--gold)}
+.jmc-time{font-size:10px;color:var(--muted);padding:2px 14px 8px;text-align:right}
+
+/* CHAT */
+.ci{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.ci:active{background:var(--navy2)}
+.ci-av{width:46px;height:46px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#000;flex-shrink:0}
+.ci-info{flex:1;min-width:0}
+.ci-name{font-weight:800;font-size:14px}
+.ci-last{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.ci-time{font-size:11px;color:var(--muted)}
+.chat-topbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;flex-shrink:0}
+.ct-av{width:38px;height:38px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;font-size:15px;flex-shrink:0}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:4px;scrollbar-width:none}
+.chat-msgs::-webkit-scrollbar{display:none}
+.msg{max-width:80%;display:flex;flex-direction:column}
+.msg.out{align-self:flex-end;align-items:flex-end}
+.msg.in{align-self:flex-start;align-items:flex-start}
+.msg-bubble{padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;word-break:break-word}
+.msg.out .msg-bubble{background:var(--gold);color:#000;border-bottom-right-radius:4px}
+.msg.in .msg-bubble{background:var(--navy3);border-bottom-left-radius:4px}
+.msg-time{font-size:10px;color:var(--muted);margin-top:2px;padding:0 4px}
+.msg-sys{text-align:center;color:var(--muted);font-size:12px;padding:8px;font-weight:700}
+.chat-inp-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.chat-inp-row input{flex:1;background:var(--navy2);border:1.5px solid var(--border);border-radius:24px;padding:10px 16px;color:var(--white);font-family:inherit;font-size:14px;outline:none}
+.chat-inp-row input:focus{border-color:var(--gold)}
+.chat-inp-row input::placeholder{color:var(--muted)}
+.send-btn{width:40px;height:40px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* PROFILE */
+.prof-hd{text-align:center;padding:20px 16px 12px}
+.prof-av{width:72px;height:72px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#000;margin:0 auto 10px}
+
+/* OFFER */
+.offer-target{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--navy2);border-bottom:1px solid var(--border)}
+.ot-av{width:44px;height:44px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#000;flex-shrink:0}
+.ot-name{font-weight:800;font-size:15px}
+.ot-job{font-size:12px;color:var(--muted)}
+
+/* JOB DROP */
+.job-wrap{position:relative}
+.job-inp{width:100%;background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--white);font-family:inherit;font-size:15px;padding:13px 16px;outline:none;cursor:pointer}
+.job-inp:focus,.job-inp.open{border-color:var(--gold)}
+.job-inp::placeholder{color:var(--muted)}
+.job-drop{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--navy3);border:1.5px solid var(--gold);border-radius:var(--r-sm);z-index:200;max-height:220px;overflow-y:auto;scrollbar-width:none;box-shadow:0 4px 24px rgba(0,0,0,.3)}
+.job-drop.open{display:block}
+.job-drop::-webkit-scrollbar{display:none}
+.jd-s{padding:10px 12px 6px}
+.jd-s input{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--white);font-family:inherit;font-size:13px;outline:none}
+.job-opt{padding:11px 16px;cursor:pointer;font-size:14px}
+.job-opt:hover,.job-opt:active{background:rgba(245,166,35,.1);color:var(--gold)}
+.job-opt.hide{display:none}
+
+/* STARS */
+.star-row{display:flex;gap:8px;margin:8px 0 16px}
+.star{font-size:32px;cursor:pointer;color:var(--border);user-select:none}
+.star.on{color:var(--gold)}
+
+/* TOAST */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy3);border:1px solid var(--border);color:var(--white);padding:10px 20px;border-radius:24px;font-size:13px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:9999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SPLASH -->
+<div class="screen active" id="s-splash">
+  <div class="splash-wrap">
+    <div class="splash-ico">🏗</div>
+    <div class="splash-nm">Kun<span>By</span></div>
+    <div class="splash-tag" data-t="tagline">Ishchi toping. Ish toping.</div>
+    <div class="sdots"><div class="sdot on"></div><div class="sdot"></div><div class="sdot"></div></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="screen" id="s-login">
+  <div class="auth-scroll"><div class="auth-inner">
+    <div class="auth-logo">Kun<span>By</span></div>
+    <div class="lang-bar">
+      <button class="lbtn" data-lang="uz_lat" onclick="setLang('uz_lat')">O'zbek</button>
+      <button class="lbtn" data-lang="uz_kir" onclick="setLang('uz_kir')">Ўзбек</button>
+      <button class="lbtn" data-lang="ru" onclick="setLang('ru')">Русский</button>
+    </div>
+    <h2 class="auth-title" data-t="login_title">Kirish</h2>
+    <div class="inp-row">
+      <span class="inp-pre">+998</span>
+      <input class="inp inp-ph" id="lp" type="tel" maxlength="9" placeholder="99 123 45 67" oninput="fmtPhone(this)">
+    </div>
+    <div class="inp-row">
+      <input class="inp" id="lpw" type="password" data-tp="pass_ph" placeholder="Parol">
+      <span class="eye" onclick="toggleEye('lpw',this)">👁</span>
+    </div>
+    <div class="err" id="l-err"></div>
+    <button class="btn" onclick="doLogin()" data-t="login_btn">Kirish</button>
+    <div class="auth-links">
+      <button class="btn-link" onclick="goTo('s-register')" data-t="go_reg">Ro'yxatdan o'tish</button>
+      <button class="btn-link" onclick="goTo('s-forgot')" data-t="forgot_link">Parolni unutdim</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- REGISTER -->
+<div class="screen" id="s-register">
+  <div class="auth-scroll"><div class="auth-inner">
+    <div class="auth-logo">Kun<span>By</span></div>
+    <h2 class="auth-title" data-t="reg_title">Ro'yxatdan o'tish</h2>
+    <input class="inp" id="rn" type="text" data-tp="name_ph" placeholder="Ism familiya">
+    <div class="inp-row">
+      <span class="inp-pre">+998</span>
+      <input class="inp inp-ph" id="rp" type="tel" maxlength="9" placeholder="99 123 45 67" oninput="fmtPhone(this)">
+    </div>
+    <div class="inp-row">
+      <input class="inp" id="rpw" type="password" data-tp="pass_ph" placeholder="Parol">
+      <span class="eye" onclick="toggleEye('rpw',this)">👁</span>
+    </div>
+    <input class="inp" id="rpw2" type="password" data-tp="pass2_ph" placeholder="Parolni tasdiqlang">
+    <div class="err" id="r-err"></div>
+    <button class="btn" onclick="doRegister()" data-t="reg_btn">Ro'yxatdan o'tish</button>
+    <div class="auth-links">
+      <button class="btn-link" onclick="goTo('s-login')" data-t="login_btn">Kirish</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- VERIFY -->
+<div class="screen" id="s-verify">
+  <div class="auth-scroll"><div class="auth-inner">
+    <div class="auth-logo">Kun<span>By</span></div>
+    <h2 class="auth-title" data-t="verify_title">Tasdiqlash</h2>
+    <p style="text-align:center;color:var(--muted);font-size:13px" id="v-desc"></p>
+    <input class="inp otp-inp" id="v-code" type="tel" maxlength="6" placeholder="• • • •">
+    <div class="err" id="v-err"></div>
+    <button class="btn" onclick="doVerify()" data-t="verify_btn">Tasdiqlash</button>
+    <div style="text-align:center">
+      <button class="btn-link" id="resend-btn" onclick="resendOTP()" style="display:none" data-t="resend">Qayta yuborish</button>
+      <span id="resend-timer" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+  </div></div>
+</div>
+
+<!-- FORGOT -->
+<div class="screen" id="s-forgot">
+  <div class="auth-scroll"><div class="auth-inner">
+    <div class="auth-logo">Kun<span>By</span></div>
+    <h2 class="auth-title" data-t="forgot_title">Parolni tiklash</h2>
+    <p style="text-align:center;color:var(--muted);font-size:13px" data-t="forgot_desc"></p>
+    <div class="inp-row">
+      <span class="inp-pre">+998</span>
+      <input class="inp inp-ph" id="fp" type="tel" maxlength="9" placeholder="99 123 45 67" oninput="fmtPhone(this)">
+    </div>
+    <div class="err" id="f-err"></div>
+    <button class="btn" onclick="doForgot()" data-t="forgot_btn">Davom etish</button>
+    <div class="auth-links">
+      <button class="btn-link" onclick="goBack()" data-t="back">← Orqaga</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- NEW PASS -->
+<div class="screen" id="s-newpass">
+  <div class="auth-scroll"><div class="auth-inner">
+    <div class="auth-logo">Kun<span>By</span></div>
+    <h2 class="auth-title" data-t="newpass_title">Yangi parol</h2>
+    <div class="inp-row">
+      <input class="inp" id="np1" type="password" data-tp="pass_ph" placeholder="Yangi parol">
+      <span class="eye" onclick="toggleEye('np1',this)">👁</span>
+    </div>
+    <input class="inp" id="np2" type="password" data-tp="pass2_ph" placeholder="Tasdiqlang">
+    <div class="err" id="np-err"></div>
+    <button class="btn" onclick="doNewPass()" data-t="save">Saqlash</button>
+  </div></div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="s-home">
+  <div class="scroll" style="padding-bottom:70px">
+    <div class="h-top">
+      <div>
+        <div class="h-greet" data-t="greet">Assalomu alaykum 👋</div>
+        <div class="h-name" id="h-name">—</div>
+      </div>
+      <div style="display:flex;gap:5px;padding-top:4px">
+        <button class="hlb" data-lang="uz_lat" onclick="setLang('uz_lat')">Lat</button>
+        <button class="hlb" data-lang="uz_kir" onclick="setLang('uz_kir')">Кир</button>
+        <button class="hlb" data-lang="ru" onclick="setLang('ru')">Рус</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="s-val" id="h-done">0</div><div class="s-lbl" data-t="done">Bajarilgan</div></div>
+      <div class="stat-box"><div class="s-val" id="h-rating">—</div><div class="s-lbl" data-t="rating">Reyting</div></div>
+      <div class="stat-box"><div class="s-val" id="h-revs">0</div><div class="s-lbl" data-t="reviews">Sharhlar</div></div>
+    </div>
+    <div class="ready-row">
+      <div>
+        <div style="font-size:14px;font-weight:800" id="h-ready-txt" data-t="ready_on">Ish qabul qilishga tayyorman</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" data-t="ready_sub">Boshqalar siz bilan bog'lana oladi</div>
+      </div>
+      <label class="tog"><input type="checkbox" id="h-tog" onchange="toggleReady(this)"><span class="tog-sl"></span></label>
+    </div>
+    <div class="h-cards">
+      <div class="hcard" onclick="goTo('s-jobs')">
+        <div class="hc-ico">💼</div>
+        <div class="hc-t" data-t="find_job">Ish topish</div>
+        <div class="hc-s" data-t="find_job_sub">Takliflarni ko'ring</div>
+      </div>
+      <div class="hcard" onclick="goTo('s-search')">
+        <div class="hc-ico">🔍</div>
+        <div class="hc-t" data-t="find_worker">Ishchi topish</div>
+        <div class="hc-s" data-t="find_worker_sub">Mutaxassis qidiring</div>
+      </div>
+    </div>
+    <div class="sec" data-t="recent">Oxirgi takliflar</div>
+    <div id="h-recent"></div>
+  </div>
+  <div class="bnav" id="bn-home">
+    <button class="nb on" onclick="goTo('s-home')"><span class="bi">🏠</span><span data-t="nav_home">Bosh sahifa</span></button>
+    <button class="nb" onclick="goTo('s-search')"><span class="bi">🔍</span><span data-t="nav_search">Qidirish</span></button>
+    <button class="nb" onclick="goTo('s-jobs')"><span class="bi">💼</span><span data-t="nav_jobs">Ishlar</span></button>
+    <button class="nb" onclick="goTo('s-chat')"><span class="bi">💬</span><span data-t="nav_chat">Chat</span></button>
+    <button class="nb" onclick="goTo('s-profile')"><span class="bi">👤</span><span data-t="nav_prof">Profil</span></button>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="screen" id="s-search">
+  <div class="topbar"><div class="tb-title" data-t="nav_search">Qidirish</div></div>
+  <div class="search-bar">
+    <span>🔍</span>
+    <input id="sq" type="text" data-tp="search_ph" placeholder="Kasb, ism..." oninput="doSearch()">
+  </div>
+  <div class="filter-row" id="filter-row"></div>
+  <div class="scroll" style="padding-bottom:70px"><div id="s-results"></div></div>
+  <div class="bnav">
+    <button class="nb" onclick="goTo('s-home')"><span class="bi">🏠</span><span data-t="nav_home">Bosh sahifa</span></button>
+    <button class="nb on" onclick="goTo('s-search')"><span class="bi">🔍</span><span data-t="nav_search">Qidirish</span></button>
+    <button class="nb" onclick="goTo('s-jobs')"><span class="bi">💼</span><span data-t="nav_jobs">Ishlar</span></button>
+    <button class="nb" onclick="goTo('s-chat')"><span class="bi">💬</span><span data-t="nav_chat">Chat</span></button>
+    <button class="nb" onclick="goTo('s-profile')"><span class="bi">👤</span><span data-t="nav_prof">Profil</span></button>
+  </div>
+</div>
+
+<!-- USER DETAIL -->
+<div class="screen" id="s-user-detail">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="tb-title" data-t="profile">Profil</div>
+    <div></div>
+  </div>
+  <div class="scroll">
+    <div class="ud-hd">
+      <div class="ud-av" id="ud-av">?</div>
+      <div style="font-size:20px;font-weight:900" id="ud-name">—</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:2px" id="ud-job">—</div>
+      <div style="font-size:13px;color:var(--gold);margin-top:4px" id="ud-rating">⭐ —</div>
+      <div class="ud-btns">
+        <button class="bsm gold" onclick="openOfferToViewing()">💼 <span data-t="send_offer">Taklif yuborish</span></button>
+        <button class="bsm gray" onclick="chatWithViewing()">💬 <span data-t="write_msg">Yozish</span></button>
+      </div>
+    </div>
+    <div class="card" id="ud-bio-card"><div style="font-size:13px;color:var(--muted);line-height:1.6" id="ud-bio">—</div></div>
+    <div class="sec" data-t="info">Ma'lumotlar</div>
+    <div class="card">
+      <div class="pf-row"><span class="pf-lbl" data-t="price_lbl">Narx</span><span class="pf-val" id="ud-price">—</span></div>
+      <div class="pf-row"><span class="pf-lbl" data-t="exp_lbl">Tajriba</span><span class="pf-val" id="ud-exp">—</span></div>
+      <div class="pf-row"><span class="pf-lbl" data-t="location">Joylashuv</span><span class="pf-val" id="ud-loc">—</span></div>
+    </div>
+    <div class="sec" data-t="reviews">Sharhlar</div>
+    <div id="ud-reviews" style="padding-bottom:20px"></div>
+  </div>
+</div>
+
+<!-- OFFER -->
+<div class="screen" id="s-offer">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="tb-title" data-t="offer_title">Taklif yuborish</div>
+    <div></div>
+  </div>
+  <div class="scroll" style="padding-bottom:20px">
+    <div class="offer-target">
+      <div class="ot-av" id="offer-av">?</div>
+      <div><div class="ot-name" id="offer-name">—</div><div class="ot-job" id="offer-job">—</div></div>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div><div class="lbl" data-t="offer_desc_lbl">Ish tavsifi *</div>
+      <textarea class="inp" id="o-desc" rows="4" data-tp="offer_desc_ph" placeholder="Qanday ish?"></textarea></div>
+      <div><div class="lbl" data-t="offer_price_lbl">Narx (so'm)</div>
+      <input class="inp" id="o-price" type="number" placeholder="150000"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><div class="lbl" data-t="date">Sana</div><input class="inp" id="o-date" type="date"></div>
+        <div><div class="lbl" data-t="time">Vaqt</div><input class="inp" id="o-time" type="time"></div>
+      </div>
+      <div><div class="lbl" data-t="region">Viloyat</div>
+      <select class="inp" id="o-city" onchange="fillOfferDistricts()"><option value="">—</option></select></div>
+      <div><div class="lbl" data-t="district">Tuman</div>
+      <select class="inp" id="o-district"><option value="">—</option></select></div>
+      <div><div class="lbl" data-t="address">Manzil</div>
+      <input class="inp" id="o-addr" type="text" data-tp="addr_ph" placeholder="Ko'cha, uy"></div>
+      <div class="err" id="o-err"></div>
+      <button class="btn" onclick="sendOffer()" data-t="offer_send">Taklif yuborish 📤</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOBS -->
+<div class="screen" id="s-jobs">
+  <div class="topbar"><div class="tb-title" data-t="nav_jobs">Ishlar</div></div>
+  <div style="display:flex;padding:12px 16px;gap:0;flex-shrink:0">
+    <button id="jt-in" onclick="switchJobTab('in')" style="flex:1;padding:10px;border-radius:var(--r) 0 0 var(--r);border:1.5px solid var(--gold);background:var(--gold);color:#000;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer" data-t="jobs_in">Kelgan takliflar</button>
+    <button id="jt-out" onclick="switchJobTab('out')" style="flex:1;padding:10px;border-radius:0 var(--r) var(--r) 0;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer" data-t="jobs_out">Yuborgan takliflar</button>
+  </div>
+  <div class="scroll" style="padding-bottom:70px">
+    <div id="jl-in"></div>
+    <div id="jl-out" style="display:none"></div>
+  </div>
+  <div class="bnav">
+    <button class="nb" onclick="goTo('s-home')"><span class="bi">🏠</span><span data-t="nav_home">Bosh sahifa</span></button>
+    <button class="nb" onclick="goTo('s-search')"><span class="bi">🔍</span><span data-t="nav_search">Qidirish</span></button>
+    <button class="nb on" onclick="goTo('s-jobs')"><span class="bi">💼</span><span data-t="nav_jobs">Ishlar</span></button>
+    <button class="nb" onclick="goTo('s-chat')"><span class="bi">💬</span><span data-t="nav_chat">Chat</span></button>
+    <button class="nb" onclick="goTo('s-profile')"><span class="bi">👤</span><span data-t="nav_prof">Profil</span></button>
+  </div>
+</div>
+
+<!-- CHAT LIST -->
+<div class="screen" id="s-chat">
+  <div class="topbar"><div class="tb-title" data-t="nav_chat">Chat</div></div>
+  <div class="scroll" style="padding-bottom:70px"><div id="chat-list"></div></div>
+  <div class="bnav">
+    <button class="nb" onclick="goTo('s-home')"><span class="bi">🏠</span><span data-t="nav_home">Bosh sahifa</span></button>
+    <button class="nb" onclick="goTo('s-search')"><span class="bi">🔍</span><span data-t="nav_search">Qidirish</span></button>
+    <button class="nb" onclick="goTo('s-jobs')"><span class="bi">💼</span><span data-t="nav_jobs">Ishlar</span></button>
+    <button class="nb on" onclick="goTo('s-chat')"><span class="bi">💬</span><span data-t="nav_chat">Chat</span></button>
+    <button class="nb" onclick="goTo('s-profile')"><span class="bi">👤</span><span data-t="nav_prof">Profil</span></button>
+  </div>
+</div>
+
+<!-- CHAT OPEN -->
+<div class="screen" id="s-chat-open">
+  <div class="chat-topbar" onclick="viewPeer()">
+    <button class="back-btn" onclick="event.stopPropagation();goBack()">←</button>
+    <div class="ct-av" id="ct-av">?</div>
+    <div><div style="font-weight:800;font-size:14px" id="ct-name">—</div><div style="font-size:11px;color:var(--muted)" id="ct-job">—</div></div>
+  </div>
+  <div class="chat-msgs" id="chat-msgs"></div>
+  <div class="chat-inp-row">
+    <input id="chat-inp" type="text" data-tp="chat_ph" placeholder="Xabar yozing..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="send-btn" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="s-profile">
+  <div class="scroll" style="padding-bottom:70px">
+    <div class="topbar" style="border-bottom:none">
+      <div class="tb-title" data-t="nav_prof">Profil</div>
+      <button class="bsm gold" onclick="goTo('s-profile-edit')" data-t="edit">Tahrirlash</button>
+    </div>
+    <div class="prof-hd">
+      <div class="prof-av" id="p-av">?</div>
+      <div style="font-size:18px;font-weight:900" id="p-name">—</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px" id="p-job">—</div>
+      <div style="font-size:13px;color:var(--gold);margin-top:4px" id="p-rating">⭐ —</div>
+    </div>
+    <div class="card">
+      <div class="pf-row"><span class="pf-lbl" data-t="price_lbl">Narx</span><span class="pf-val" id="p-price">—</span></div>
+      <div class="pf-row"><span class="pf-lbl" data-t="exp_lbl">Tajriba</span><span class="pf-val" id="p-exp">—</span></div>
+      <div class="pf-row"><span class="pf-lbl" data-t="location">Joylashuv</span><span class="pf-val" id="p-loc">—</span></div>
+    </div>
+    <div class="card" id="p-bio-card"><div style="font-size:13px;color:var(--muted);line-height:1.6" id="p-bio">—</div></div>
+    <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+      <button class="bsm gold" style="width:100%;padding:12px" onclick="goTo('s-my-reviews')" data-t="my_reviews">Sharhlarim</button>
+      <button class="bsm danger" style="width:100%;padding:12px" onclick="doLogout()" data-t="logout">Chiqish</button>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="nb" onclick="goTo('s-home')"><span class="bi">🏠</span><span data-t="nav_home">Bosh sahifa</span></button>
+    <button class="nb" onclick="goTo('s-search')"><span class="bi">🔍</span><span data-t="nav_search">Qidirish</span></button>
+    <button class="nb" onclick="goTo('s-jobs')"><span class="bi">💼</span><span data-t="nav_jobs">Ishlar</span></button>
+    <button class="nb" onclick="goTo('s-chat')"><span class="bi">💬</span><span data-t="nav_chat">Chat</span></button>
+    <button class="nb on" onclick="goTo('s-profile')"><span class="bi">👤</span><span data-t="nav_prof">Profil</span></button>
+  </div>
+</div>
+
+<!-- PROFILE EDIT -->
+<div class="screen" id="s-profile-edit">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="tb-title" data-t="edit_profile">Profil tahrirlash</div>
+    <div></div>
+  </div>
+  <div class="scroll" style="padding-bottom:20px">
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div class="lbl" data-t="full_name">Ism familiya</div>
+      <input class="inp" id="pe-name" type="text" data-tp="name_ph" placeholder="Ism familiya">
+      <div class="lbl" data-t="job_lbl">Kasb</div>
+      <input type="hidden" id="pe-job">
+      <div class="job-wrap">
+        <input class="job-inp" id="jd-inp" type="text" data-tp="job_ph" placeholder="Kasb tanlang..." onfocus="openJobDrop()" oninput="filterJobDrop(this.value)" autocomplete="off">
+        <div class="job-drop" id="job-drop">
+          <div class="jd-s"><input type="text" data-tp="search_ph" placeholder="🔍 Qidirish..." oninput="filterJobDrop(this.value)"></div>
+          <div id="job-opts"></div>
+        </div>
+      </div>
+      <div class="lbl" data-t="price_lbl">Boshlang'ich narx (so'm)</div>
+      <input class="inp" id="pe-price" type="number" placeholder="150000">
+      <div class="lbl" data-t="exp_lbl">Tajriba (yil)</div>
+      <input class="inp" id="pe-exp" type="number" placeholder="3">
+      <div class="lbl" data-t="region">Viloyat / Shahar</div>
+      <select class="inp" id="pe-city" onchange="fillPeDistricts()"><option value="">—</option></select>
+      <div class="lbl" data-t="district">Tuman</div>
+      <select class="inp" id="pe-district"><option value="">—</option></select>
+      <div class="lbl" data-t="bio_lbl">Bio</div>
+      <textarea class="inp" id="pe-bio" rows="4" data-tp="bio_ph" placeholder="O'zingiz haqida..."></textarea>
+      <button class="btn" onclick="saveProfile()" data-t="save">Saqlash ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- MY REVIEWS -->
+<div class="screen" id="s-my-reviews">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="tb-title" data-t="my_reviews">Sharhlarim</div>
+    <div></div>
+  </div>
+  <div class="scroll" style="padding-bottom:20px"><div id="my-rev-list"></div></div>
+</div>
+
+<!-- RATE USER -->
+<div class="screen" id="s-rate-user">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="tb-title" data-t="rate_title">Baholash</div>
+    <div></div>
+  </div>
+  <div class="scroll">
+    <div class="offer-target">
+      <div class="ot-av" id="rate-av">?</div>
+      <div><div class="ot-name" id="rate-name">—</div><div class="ot-job" id="rate-job">—</div></div>
+    </div>
+    <div style="padding:16px">
+      <div style="font-size:14px;font-weight:700;color:var(--muted)" data-t="rate_stars">Bahoni tanlang</div>
+      <div class="star-row" id="rate-stars">
+        <span class="star" onclick="setStar(1)">★</span><span class="star" onclick="setStar(2)">★</span>
+        <span class="star" onclick="setStar(3)">★</span><span class="star" onclick="setStar(4)">★</span>
+        <span class="star" onclick="setStar(5)">★</span>
+      </div>
+      <div class="lbl" data-t="rev_lbl">Sharh (ixtiyoriy)</div>
+      <textarea class="inp" id="rate-text" rows="4" data-tp="rev_ph" placeholder="Ish haqida..." style="margin-top:6px"></textarea>
+      <button class="btn" onclick="submitReview()" style="margin-top:14px" data-t="submit_rev">Yuborish ✓</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  KUNBY v6 — To'liq qayta yozilgan
+//  • Faqat Supabase (localStorage yo'q)
+//  • UUID asosli chat
+//  • Til tanlash: kasb, viloyat, tuman nomlari ham o'zgaradi
+//  • Profildan chatga o'tish ishlaydi
+//  • Barcha tugmalar ishlaydi
+// ══════════════════════════════════════════════════════
+
+// ── SUPABASE ──────────────────────────────────────────
+const SB_URL='https://qabgqrkgvyzyhprhiwiu.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhYmdxcmtndnl6eWhwcmhpd2l1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDAyNDQsImV4cCI6MjA4OTA3NjI0NH0.ihyn_t72VJ_QUKUSagDkDkd4Ke87RhP0GCqCeYElkt0';
+let sb=null;
+try{ sb=supabase.createClient(SB_URL,SB_KEY); }catch(e){}
+
+// ── TILLAR ──────────────────────────────────────────
+// Kasb nomlari — tarjima bilan
+const JOBS_UZ=[
+  'Elektrik','Santexnik','Quruvchi','Duradgor',"Bo'yoqchi",
+  'Konditsioner ustasi','Kompyuter ustasi','Maishiy texnika ustasi',
+  'Uy tozalovchi','Haydovchi','Oshpaz','Novvoy','Tikuvchi','Sartarosh',
+  "Go'zallik ustasi",'Massajchi','Repetitor','Tarjimon','Fotograf',
+  'Videograf','Dizayner','Dasturchi','Buxgalter','Huquqshunos',
+  'Shifokor','Hamshira','Qorovul','Yuk tashuvchi','Tozalovchi',
+  "Bog'bon",'Payvandchi','Toqchi','Temirchi','Gipschi','Plitkachi',
+  'Parketchi',"Deraza o'rnatuvchi","Eshik o'rnatuvchi",
+  'Kran operatori','Ekskavatorchi','Kunlik ishchi','Boshqa'
+];
+const JOBS_KIR=[
+  'Электрик','Сантехник','Қурувчи','Дурадгор','Бўёқчи',
+  'Кондиционер устаси','Компьютер устаси','Маиший техника устаси',
+  'Уй тозаловчи','Ҳайдовчи','Ошпаз','Новвой','Тикувчи','Сартарош',
+  'Гўзаллик устаси','Массажчи','Репетитор','Таржимон','Фотограф',
+  'Видеограф','Дизайнер','Дастурчи','Бухгалтер','Ҳуқуқшунос',
+  'Шифокор','Ҳамшира','Қоровул','Юк ташувчи','Тозаловчи',
+  'Боғбон','Пайвандчи','Тоқчи','Темирчи','Гипсчи','Плиткачи',
+  'Паркетчи','Дераза ўрнатувчи','Эшик ўрнатувчи',
+  'Кран оператори','Экскаваторчи','Кунлик ишчи','Бошқа'
+];
+const JOBS_RU=[
+  'Электрик','Сантехник','Строитель','Столяр','Маляр',
+  'Мастер кондиционеров','Компьютерный мастер','Мастер бытовой техники',
+  'Уборщик дома','Водитель','Повар','Пекарь','Швея','Парикмахер',
+  'Мастер красоты','Массажист','Репетитор','Переводчик','Фотограф',
+  'Видеограф','Дизайнер','Программист','Бухгалтер','Юрист',
+  'Врач','Медсестра','Охранник','Грузчик','Уборщик',
+  'Садовник','Сварщик','Ткач','Кузнец','Штукатур','Плиточник',
+  'Паркетчик','Установщик окон','Установщик дверей',
+  'Оператор крана','Экскаваторщик','Разнорабочий','Другое'
+];
+
+// Viloyatlar — 14 ta + Qoraqalpog'iston
+const REGIONS={
+  uz_lat:[
+    'Toshkent shahri','Toshkent viloyati','Samarqand','Buxoro',
+    "Farg'ona",'Andijon','Namangan','Qashqadaryo','Surxondaryo',
+    'Xorazm','Jizzax','Sirdaryo','Navoiy',"Qoraqalpog'iston"
+  ],
+  uz_kir:[
+    'Тошкент шаҳри','Тошкент вилояти','Самарқанд','Бухоро',
+    'Фарғона','Андижон','Наманган','Қашқадарё','Сурхондарё',
+    'Хоразм','Жиззах','Сирдарё','Навоий','Қорақалпоғистон'
+  ],
+  ru:[
+    'Ташкент (город)','Ташкентская область','Самарканд','Бухара',
+    'Фергана','Андижан','Наманган','Кашкадарья','Сурхандарья',
+    'Хорезм','Джизак','Сырдарья','Навои','Каракалпакстан'
+  ]
+};
+// Kalit — doim uz_lat (internal)
+const REGION_KEYS=[
+  'toshkent_sh','toshkent_vil','samarqand','buxoro','fargona',
+  'andijon','namangan','qashqadaryo','surxondaryo','xorazm',
+  'jizzax','sirdaryo','navoiy','qoraqalpogiston'
+];
+
+// Tumanlar — to'liq ro'yxat
+const DISTRICTS_UZ={
+  toshkent_sh:['Bektemir','Chilonzor','Yashnobod','Mirzo Ulug\'bek','Mirobod','Olmazor','Sergeli','Shayxontohur','Uchtepa','Yakkasaroy','Yunusobod'],
+  toshkent_vil:['Angren','Bekobod','Bo\'stonliq','Chirchiq','G\'azalkent','Nurafshon','Ohangaron','Parkent','Piskent','Qibray','Zangiota','Oqqo\'rg\'on','Yangiyo\'l','Bo\'ka','Urtachirchiq','Yuqorichirchiq','Quyichirchiq','Toshkent tumani'],
+  samarqand:['Bulung\'ur','Ishtixon','Jomboy','Kattaqo\'rg\'on','Narpay','Nurobod','Oqdaryo','Pastdarg\'om','Payariq','Qo\'shrabot','Toyloq','Urgut','Samarqand shahri'],
+  buxoro:['Buxoro sh.','G\'ijduvon','Jondor','Kogon','Olot','Peshku','Qorovulbozor','Romitan','Shofirkon','Vobkent','Qorako\'l'],
+  fargona:['Bag\'dod','Beshariq','Buvayda','Dang\'ara','Farg\'ona sh.','Furqat','Qo\'qon','Marg\'ilon','Oltiariq','Rishton','So\'x','Toshloq','Uchko\'prik','Yozyovon','Quva','O\'zbekiston','Farg\'ona tumani'],
+  andijon:['Andijon sh.','Asaka','Baliqchi','Boz','Buloqboshi','Izboskan','Jalaquduq','Marhamat','Oltinko\'l','Paxtaobod','Qo\'rg\'ontepa','Shahrixon','Ulug\'nor','Xo\'jaobod','Andijon tumani'],
+  namangan:['Chortoq','Chust','Kosonsoy','Mingbuloq','Namangan sh.','Norin','Pop','To\'raqo\'rg\'on','Uchqo\'rg\'on','Yangiqo\'rg\'on','Namangan tumani'],
+  qashqadaryo:['Chiroqchi','Dehqonobod','G\'uzor','Kasbi','Kitob','Koson','Mirishkor','Muborak','Nishon','Qamashi','Qarshi sh.','Shahrisabz','Yakkabog\'','Qarshi tumani'],
+  surxondaryo:['Angor','Bandixon','Boysun','Denov','Jarqo\'rg\'on','Muzrabot','Oltinsoy','Qiziriq','Qumqo\'rg\'on','Sariosiyo','Sherobod','Sho\'rchi','Termiz sh.','Uzun','Termiz tumani'],
+  xorazm:['Bog\'ot','Gurlan','Hazorasp','Xiva','Qo\'shko\'pir','Urganch sh.','Yangiariq','Yangibozor','Urganch tumani','Tuproqqal\'a','Shovot'],
+  jizzax:['Arnasoy','Baxmal','Do\'stlik','Forish','G\'allaorol','Jizzax sh.','Mirzacho\'l','Paxtakor','Sharof Rashidov','Yangiobod','Zarbdor','Zafarobod','Zomin','Jizzax tumani'],
+  sirdaryo:['Boyovut','Guliston sh.','Mirzaobod','Oqoltin','Sardoba','Sayxunobod','Shirin','Xavos','Sirdaryo tumani','Guliston tumani'],
+  navoiy:['Karmana','Konimex','Navbahor','Navoiy sh.','Nurota','Qiziltepa','Tomdi','Uchquduq','Xatirchi','Navoiy tumani'],
+  qoraqalpogiston:['No\'kis sh.','Amudaryo','Beruniy','Chimboy','Ellikkala','Kegeyli','Mo\'ynoq','Nukus tumani','Qonliko\'l','Qo\'ng\'irot','Shumanay','Taxtako\'pir','To\'rtko\'l','Xo\'jayli','Qorao\'zak','Bozatov']
+};
+const DISTRICTS_KIR={
+  toshkent_sh:['Бектемир','Чилонзор','Яшнобод','Мирзо Улуғбек','Миробод','Олмазор','Сергели','Шайхонтоҳур','Учтепа','Яккасарой','Юнусобод'],
+  toshkent_vil:['Ангрен','Бекобод','Бўстонлиқ','Чирчиқ','Ғазалкент','Нурафшон','Оҳангарон','Паркент','Пискент','Қибрай','Зангиота','Оққўрғон','Янгийўл','Бўка','Уртачирчиқ','Юқоричирчиқ','Қуйичирчиқ','Тошкент тумани'],
+  samarqand:['Булунғур','Иштихон','Жомбой','Каттақўрғон','Нарпай','Нуробод','Оқдарё','Пастдарғом','Пайариқ','Қўшработ','Тойлоқ','Урғут','Самарқанд шаҳри'],
+  buxoro:['Бухоро ш.','Ғиждувон','Жондор','Когон','Олот','Пешку','Қоровулбозор','Ромитан','Шофиркон','Вобкент','Қоракўл'],
+  fargona:['Боғдод','Бешариқ','Бувайда','Данғара','Фарғона ш.','Фурқат','Қўқон','Марғилон','Олтиариқ','Риштон','Сўх','Тошлоқ','Учкўприк','Ёзёвон','Қува','Ўзбекистон','Фарғона тумани'],
+  andijon:['Андижон ш.','Асака','Балиқчи','Бўз','Булоқбоши','Избоскан','Жалақудуқ','Марҳамат','Олтинкўл','Пахтаобод','Қўрғонтепа','Шаҳрихон','Улуғнор','Хўжаобод','Андижон тумани'],
+  namangan:['Чортоқ','Чуст','Косонсой','Мингбулоқ','Наманган ш.','Норин','Поп','Тўрақўрғон','Учқўрғон','Янгиқўрғон','Наманган тумани'],
+  qashqadaryo:['Чироқчи','Деҳқонобод','Ғузор','Касби','Китоб','Косон','Миришкор','Муборак','Нишон','Қамаши','Қарши ш.','Шаҳрисабз','Яккабоғ','Қарши тумани'],
+  surxondaryo:['Ангор','Бандихон','Бойсун','Денов','Жарқўрғон','Музработ','Олтинсой','Қизириқ','Қумқўрғон','Сариосиё','Шеробод','Шўрчи','Термиз ш.','Узун','Термиз тумани'],
+  xorazm:['Боғот','Гурлан','Ҳазорасп','Хива','Қўшкўпир','Урганч ш.','Янгиариқ','Янгибозор','Урганч тумани','Тупроққалъа','Шовот'],
+  jizzax:['Арнасой','Бахмал','Дўстлик','Фориш','Ғаллаорол','Жиззах ш.','Мирзачўл','Пахтакор','Шароф Рашидов','Янгиобод','Зарбдор','Зафаробод','Зомин','Жиззах тумани'],
+  sirdaryo:['Бойовут','Гулистон ш.','Мирзаобод','Оқолтин','Сардоба','Сайхунобод','Ширин','Хавос','Сирдарё тумани','Гулистон тумани'],
+  navoiy:['Кармана','Конимех','Навбаҳор','Навоий ш.','Нурота','Қизилтепа','Томди','Учқудуқ','Хатирчи','Навоий тумани'],
+  qoraqalpogiston:['Нўкис ш.','Амударё','Беруний','Чимбой','Элликқала','Кегейли','Мўйноқ','Нукус тумани','Қонлиқўл','Қўнғирот','Шуманай','Тахтакўпир','Тўрткўл','Хўжайли','Қораўзак','Бозатов']
+};
+const DISTRICTS_RU={
+  toshkent_sh:['Бектемир','Чиланзар','Яшнабад','Мирзо-Улугбек','Мирабад','Алмазар','Сергели','Шайхантахур','Учтепа','Яккасарай','Юнусабад'],
+  toshkent_vil:['Ангрен','Бекабад','Бустанлык','Чирчик','Газалкент','Нурафшан','Ахангаран','Паркент','Пскент','Кибрай','Зангиата','Аккурган','Янгийул','Бука','Уртачирчик','Юкоричирчик','Куйичирчик','Ташкентский р-н'],
+  samarqand:['Булунгур','Иштыхан','Джамбай','Каттакурган','Нарпай','Нуробод','Акдарья','Пастдаргом','Паяриык','Кушработ','Тайляк','Ургут','г. Самарканд'],
+  buxoro:['г. Бухара','Гиждуван','Джандар','Каган','Алат','Пешку','Каракул','Ромитан','Шафиркан','Вабкент','Каракул р-н'],
+  fargona:['г. Фергана','Багдад','Бешарик','Бувайда','Дангара','Фуркат','Коканд','Маргилан','Алтыарык','Риштан','Сох','Ташлак','Учкупрык','Язъяван','Кува','Узбекистан р-н','Ферганский р-н'],
+  andijon:['г. Андижан','Асака','Балыкчи','Боз','Булакбаши','Избаскан','Джалакудук','Мархамат','Алтынкуль','Пахтаабад','Курганtepa','Шахрихан','Улугнор','Ходжаабад','Андижанский р-н'],
+  namangan:['Чортак','Чуст','Касансай','Мингбулак','г. Наманган','Норин','Поп','Туракурган','Учкурган','Янгикурган','Наманганский р-н'],
+  qashqadaryo:['Чиракчи','Дехканабад','Гузар','Касби','Китаб','Косон','Миришкор','Мубарак','Нишан','Камаши','г. Карши','Шахрисабз','Яккабаг','Каршинский р-н'],
+  surxondaryo:['Ангор','Бандихан','Байсун','Денау','Джаркурган','Музрабад','Алтынсай','Кизирик','Кумкурган','Сариасия','Шерабад','Шурчи','г. Термез','Узун','Термезский р-н'],
+  xorazm:['Багат','Гурлан','Хазарасп','Хива','Кушкупыр','г. Ургенч','Янгиарык','Янгибазар','Ургенчский р-н','Тупраккала','Шават'],
+  jizzax:['Арнасай','Бахмал','Дустлик','Фариш','Галлаарал','г. Джизак','Мирзачуль','Пахтакор','Шараф Рашидов','Янгиобод','Зарбдар','Зафарабад','Зомин','Джизакский р-н'],
+  sirdaryo:['Баяут','г. Гулистан','Мирзаабад','Акалтын','Сардоба','Сайхунабад','Ширин','Хавас','Сырдарьинский р-н','Гулистанский р-н'],
+  navoiy:['Кармана','Конимех','Навбахор','г. Навои','Нурата','Кизилтепа','Томды','Учкудук','Хатырчи','Навоийский р-н'],
+  qoraqalpogiston:['г. Нукус','Амударья','Беруний','Чимбай','Элликкала','Кегейли','Муйнак','Нукусский р-н','Канликуль','Кунград','Шуманай','Тахтакупыр','Турткуль','Ходжейли','Караузяк','Бозатав']
+};
+
+const L={
+uz_lat:{
+  tagline:"Ishchi toping. Ish toping.",
+  login_title:"Kirish",login_btn:"Kirish",go_reg:"Ro'yxatdan o'tish",forgot_link:"Parolni unutdim",
+  pass_ph:"Parol",
+  reg_title:"Ro'yxatdan o'tish",reg_btn:"Ro'yxatdan o'tish",name_ph:"Ism familiya",
+  pass2_ph:"Parolni tasdiqlang",
+  verify_title:"Tasdiqlash",verify_btn:"Tasdiqlash",resend:"Qayta yuborish",
+  forgot_title:"Parolni tiklash",forgot_desc:"Telefon raqamingizni kiriting",forgot_btn:"Davom etish",
+  newpass_title:"Yangi parol",save:"Saqlash",back:"← Orqaga",
+  greet:"Assalomu alaykum 👋",
+  done:"Bajarilgan",rating:"Reyting",reviews:"Sharhlar",
+  ready_on:"Ish qabul qilishga tayyorman",ready_sub:"Boshqalar siz bilan bog'lana oladi",
+  find_job:"Ish topish",find_job_sub:"Takliflarni ko'ring",
+  find_worker:"Ishchi topish",find_worker_sub:"Mutaxassis qidiring",
+  recent:"Oxirgi takliflar",
+  nav_home:"Bosh sahifa",nav_search:"Qidirish",nav_jobs:"Ishlar",nav_chat:"Chat",nav_prof:"Profil",
+  search_ph:"Kasb, ism...",all:"Barchasi",
+  profile:"Profil",info:"Ma'lumotlar",
+  price_lbl:"Boshlang'ich narx",exp_lbl:"Tajriba",location:"Joylashuv",
+  send_offer:"Taklif yuborish",write_msg:"Yozish",
+  offer_title:"Taklif yuborish",offer_desc_lbl:"Ish tavsifi *",
+  offer_desc_ph:"Qanday ish? Batafsil yozing...",offer_price_lbl:"Narx (so'm)",
+  date:"Sana",time:"Vaqt",region:"Viloyat",district:"Tuman",address:"Manzil",addr_ph:"Ko'cha, uy",
+  offer_send:"Taklif yuborish 📤",
+  jobs_in:"Kelgan takliflar",jobs_out:"Yuborgan takliflar",
+  st_p:"Kutilmoqda",st_a:"Faol",st_d:"Bajarildi",st_c:"Bekor",st_w:"Tugash kutilmoqda",
+  jca_accept:"✅ Qabul qilish",jca_reject:"❌ Rad etish",
+  jca_finish:"🏁 Ishni tugatdim",jca_confirm:"✅ Bajarilganini tasdiqlayman",jca_cfirm:"✅ Tasdiqlash",
+  job_empty:"Hali takliflar yo'q",
+  chat_ph:"Xabar yozing...",chat_empty:"Hali xabar yo'q",
+  edit:"Tahrirlash",edit_profile:"Profil tahrirlash",
+  full_name:"Ism familiya",job_lbl:"Kasb",job_ph:"Kasb tanlang...",
+  bio_lbl:"Bio",bio_ph:"O'zingiz haqida...",
+  my_reviews:"Sharhlarim",logout:"Chiqish",
+  rate_title:"Baholash",rate_stars:"Bahoni tanlang",
+  rev_lbl:"Sharh (ixtiyoriy)",rev_ph:"Ish haqida fikringiz...",submit_rev:"Yuborish ✓",
+  toast_offer:"✅ Taklif yuborildi!",toast_prof:"✅ Profil saqlandi",
+  toast_rev:"⭐ Sharh yuborildi!",toast_accepted:"✅ Taklif qabul qilindi",
+  toast_rejected:"❌ Taklif rad etildi",toast_finished:"🏁 Ish tugashini kutmoqda",
+  toast_done:"🏆 Ish muvaffaqiyatli yakunlandi!",
+  err_phone:"Telefon raqam noto'g'ri",err_name:"Ismni kiriting",
+  err_pass:"Parol kamida 6 ta belgi",err_pass2:"Parollar mos emas",
+  err_login:"Telefon yoki parol noto'g'ri",err_exists:"Bu raqam allaqachon ro'yxatdan o'tgan",
+  err_code:"Kodni to'g'ri kiriting",err_desc:"Ish tavsifini kiriting",err_stars:"Bahoni tanlang",
+  loading:"Yuklanmoqda...",searching:"Qidirilmoqda...",no_result:"Natija topilmadi",
+  som:"so'm",yil:"yil",
+},
+uz_kir:{
+  tagline:"Ишчи топинг. Иш топинг.",
+  login_title:"Кириш",login_btn:"Кириш",go_reg:"Рўйхатдан ўтиш",forgot_link:"Паролни унутдим",
+  pass_ph:"Парол",
+  reg_title:"Рўйхатдан ўтиш",reg_btn:"Рўйхатдан ўтиш",name_ph:"Исм фамилия",
+  pass2_ph:"Паролни тасдиқланг",
+  verify_title:"Тасдиқлаш",verify_btn:"Тасдиқлаш",resend:"Қайта юбориш",
+  forgot_title:"Паролни тиклаш",forgot_desc:"Телефон рақамингизни киритинг",forgot_btn:"Давом этиш",
+  newpass_title:"Янги парол",save:"Сақлаш",back:"← Орқага",
+  greet:"Ассалому алайкум 👋",
+  done:"Бажарилган",rating:"Рейтинг",reviews:"Шарҳлар",
+  ready_on:"Иш қабул қилишга тайёрман",ready_sub:"Бошқалар сиз билан боғлана олади",
+  find_job:"Иш топиш",find_job_sub:"Таклифларни кўринг",
+  find_worker:"Ишчи топиш",find_worker_sub:"Мутахассис қидиринг",
+  recent:"Охирги таклифлар",
+  nav_home:"Бош саҳифа",nav_search:"Қидириш",nav_jobs:"Ишлар",nav_chat:"Чат",nav_prof:"Профил",
+  search_ph:"Касб, исм...",all:"Барчаси",
+  profile:"Профил",info:"Маълумотлар",
+  price_lbl:"Бошланғич нарх",exp_lbl:"Тажриба",location:"Жойлашув",
+  send_offer:"Таклиф юбориш",write_msg:"Ёзиш",
+  offer_title:"Таклиф юбориш",offer_desc_lbl:"Иш тавсифи *",
+  offer_desc_ph:"Қандай иш? Батафсил ёзинг...",offer_price_lbl:"Нарх (сўм)",
+  date:"Сана",time:"Вақт",region:"Вилоят",district:"Туман",address:"Манзил",addr_ph:"Кўча, уй",
+  offer_send:"Таклиф юбориш 📤",
+  jobs_in:"Келган таклифлар",jobs_out:"Юборган таклифлар",
+  st_p:"Кутилмоқда",st_a:"Фаол",st_d:"Бажарилди",st_c:"Бекор",st_w:"Тугаш кутилмоқда",
+  jca_accept:"✅ Қабул қилиш",jca_reject:"❌ Рад этиш",
+  jca_finish:"🏁 Ишни тугатдим",jca_confirm:"✅ Бажарилганини тасдиқлайман",jca_cfirm:"✅ Тасдиқлаш",
+  job_empty:"Ҳали таклифлар йўқ",
+  chat_ph:"Хабар ёзинг...",chat_empty:"Ҳали хабар йўқ",
+  edit:"Таҳрирлаш",edit_profile:"Профил таҳрирлаш",
+  full_name:"Исм фамилия",job_lbl:"Касб",job_ph:"Касб танланг...",
+  bio_lbl:"Био",bio_ph:"Ўзингиз ҳақида...",
+  my_reviews:"Шарҳларим",logout:"Чиқиш",
+  rate_title:"Баҳолаш",rate_stars:"Баҳони танланг",
+  rev_lbl:"Шарҳ (ихтиёрий)",rev_ph:"Иш ҳақида фикрингиз...",submit_rev:"Юбориш ✓",
+  toast_offer:"✅ Таклиф юборилди!",toast_prof:"✅ Профил сақланди",
+  toast_rev:"⭐ Шарҳ юборилди!",toast_accepted:"✅ Таклиф қабул қилинди",
+  toast_rejected:"❌ Таклиф рад этилди",toast_finished:"🏁 Иш тугашини кутмоқда",
+  toast_done:"🏆 Иш муваффақиятли якунланди!",
+  err_phone:"Телефон рақам нотўғри",err_name:"Исмни киритинг",
+  err_pass:"Парол камида 6 та белги",err_pass2:"Паролlar мос эмас",
+  err_login:"Телефон ёки парол нотўғри",err_exists:"Бу рақам аллақачон рўйхатдан ўтган",
+  err_code:"Кодни тўғри киритинг",err_desc:"Иш тавсифини киритинг",err_stars:"Баҳони танланг",
+  loading:"Юкланмоқда...",searching:"Қидирилмоқда...",no_result:"Натижа топилмади",
+  som:"сўм",yil:"йил",
+},
+ru:{
+  tagline:"Найди работника. Найди работу.",
+  login_title:"Войти",login_btn:"Войти",go_reg:"Зарегистрироваться",forgot_link:"Забыл пароль",
+  pass_ph:"Пароль",
+  reg_title:"Регистрация",reg_btn:"Зарегистрироваться",name_ph:"Имя и фамилия",
+  pass2_ph:"Подтвердите пароль",
+  verify_title:"Подтверждение",verify_btn:"Подтвердить",resend:"Отправить снова",
+  forgot_title:"Восстановление пароля",forgot_desc:"Введите номер телефона",forgot_btn:"Продолжить",
+  newpass_title:"Новый пароль",save:"Сохранить",back:"← Назад",
+  greet:"Привет 👋",
+  done:"Выполнено",rating:"Рейтинг",reviews:"Отзывы",
+  ready_on:"Готов принимать заказы",ready_sub:"Другие смогут с вами связаться",
+  find_job:"Найти работу",find_job_sub:"Смотрите предложения",
+  find_worker:"Найти работника",find_worker_sub:"Ищите специалиста",
+  recent:"Последние предложения",
+  nav_home:"Главная",nav_search:"Поиск",nav_jobs:"Работы",nav_chat:"Чат",nav_prof:"Профиль",
+  search_ph:"Профессия, имя...",all:"Все",
+  profile:"Профиль",info:"Информация",
+  price_lbl:"Начальная цена",exp_lbl:"Опыт",location:"Местоположение",
+  send_offer:"Отправить предложение",write_msg:"Написать",
+  offer_title:"Отправить предложение",offer_desc_lbl:"Описание работы *",
+  offer_desc_ph:"Опишите работу подробно...",offer_price_lbl:"Цена (сум)",
+  date:"Дата",time:"Время",region:"Область",district:"Район",address:"Адрес",addr_ph:"Улица, дом",
+  offer_send:"Отправить предложение 📤",
+  jobs_in:"Входящие",jobs_out:"Исходящие",
+  st_p:"Ожидает",st_a:"Активно",st_d:"Выполнено",st_c:"Отменено",st_w:"Ожидает завершения",
+  jca_accept:"✅ Принять",jca_reject:"❌ Отклонить",
+  jca_finish:"🏁 Работа выполнена",jca_confirm:"✅ Подтверждаю выполнение",jca_cfirm:"✅ Подтвердить",
+  job_empty:"Пока нет предложений",
+  chat_ph:"Напишите сообщение...",chat_empty:"Пока нет сообщений",
+  edit:"Редактировать",edit_profile:"Редактировать профиль",
+  full_name:"Имя и фамилия",job_lbl:"Профессия",job_ph:"Выберите профессию...",
+  bio_lbl:"Био",bio_ph:"Кратко о себе...",
+  my_reviews:"Мои отзывы",logout:"Выйти",
+  rate_title:"Оценить",rate_stars:"Выберите оценку",
+  rev_lbl:"Отзыв (необязательно)",rev_ph:"Ваш отзыв о работе...",submit_rev:"Отправить ✓",
+  toast_offer:"✅ Предложение отправлено!",toast_prof:"✅ Профиль сохранён",
+  toast_rev:"⭐ Отзыв отправлен!",toast_accepted:"✅ Предложение принято",
+  toast_rejected:"❌ Предложение отклонено",toast_finished:"🏁 Ожидает подтверждения",
+  toast_done:"🏆 Работа успешно завершена!",
+  err_phone:"Неверный номер телефона",err_name:"Введите имя",
+  err_pass:"Пароль минимум 6 символов",err_pass2:"Пароли не совпадают",
+  err_login:"Неверный телефон или пароль",err_exists:"Этот номер уже зарегистрирован",
+  err_code:"Введите правильный код",err_desc:"Опишите работу",err_stars:"Выберите оценку",
+  loading:"Загрузка...",searching:"Поиск...",no_result:"Ничего не найдено",
+  som:"сум",yil:"лет",
+}};
+
+// Joriy til
+let lang = localStorage.getItem('kb6_lang')||'uz_lat';
+function t(k){ return L[lang]?.[k]||L.uz_lat[k]||k; }
+
+function getJobs(){ return lang==='uz_kir'?JOBS_KIR:lang==='ru'?JOBS_RU:JOBS_UZ; }
+function getRegions(){ return REGIONS[lang]||REGIONS.uz_lat; }
+function getDistricts(key){ const m={uz_kir:DISTRICTS_KIR,ru:DISTRICTS_RU}; return (m[lang]||DISTRICTS_UZ)[key]||[]; }
+function getRegionName(key){ const i=REGION_KEYS.indexOf(key); return i>=0?(getRegions()[i]||key):key; }
+function getJobName(uzName){ const i=JOBS_UZ.indexOf(uzName); return i>=0?(getJobs()[i]||uzName):uzName; }
+function locStr(cityKey, district){ return [getRegionName(cityKey), district].filter(Boolean).join(', '); }
+function stLabel(st){ return t({pending:'st_p',active:'st_a',done:'st_d',cancelled:'st_c',done_worker:'st_w'}[st]||'st_p'); }
+function stClass(st){ return {pending:'gold',active:'green',done:'purple',cancelled:'danger',done_worker:'gray'}[st]||'gray'; }
+
+function setLang(l){
+  lang=l;
+  localStorage.setItem('kb6_lang',l);
+  applyLang();
+  reRender();
+}
+
+function applyLang(){
+  document.querySelectorAll('[data-t]').forEach(el=>{ el.textContent=t(el.dataset.t); });
+  document.querySelectorAll('[data-tp]').forEach(el=>{ el.placeholder=t(el.dataset.tp); });
+  document.querySelectorAll('[data-lang]').forEach(btn=>{
+    if(btn.classList.contains('lbtn')||btn.classList.contains('hlb'))
+      btn.classList.toggle('on',btn.dataset.lang===lang);
+  });
+  // Select optionlarini yangilash
+  fillCitySelects();
+}
+
+function reRender(){
+  const s=document.querySelector('.screen.active')?.id;
+  if(s==='s-home') loadHome();
+  else if(s==='s-search') doSearch();
+  else if(s==='s-jobs') loadJobs();
+  else if(s==='s-chat') loadChatList();
+  else if(s==='s-chat-open') renderMsgs();
+  else if(s==='s-profile') loadProfile();
+  else if(s==='s-user-detail') refreshUdLang();
+}
+
+// City select larini to'ldirish
+function fillCitySelects(){
+  ['o-city','pe-city'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">—</option>';
+    REGION_KEYS.forEach((key,i)=>{
+      const o=document.createElement('option');
+      o.value=key; o.textContent=getRegions()[i]||key;
+      sel.appendChild(o);
+    });
+    if(cur) sel.value=cur;
+  });
+}
+
+// ── SESSION ───────────────────────────────────────────
+let me=null;        // {id, phone, name}
+let myProf=null;
+let viewingUser=null;
+let activeChat=null; // {id, name, job}
+let activeSub=null;
+let rateTarget=null;
+let rateJobId=null;
+let selStar=0;
+let timerInt=null;
+let pendingReg=null;
+let srchFilter='';
+let jobsTab='in';
+
+// In-memory cache
+const _cache={jobs:[],profs:{}};
+function getJobsCache(){ return _cache.jobs; }
+function saveJobsCache(j){ _cache.jobs.length=0; j.forEach(x=>_cache.jobs.push(x)); }
+function getProf(k){ return _cache.profs[k]||{}; }
+function saveProf(k,v){ _cache.profs[k]={...(_cache.profs[k]||{}),...v}; }
+
+// ── SUPABASE HELPERS ─────────────────────────────────
+async function sq(fn){
+  try{ return await fn(); }
+  catch(e){ console.warn('SB:',e); return null; }
+}
+
+async function sbGetOrCreate(phone,name,pass){
+  if(!sb) return null;
+  return sq(async()=>{
+    let {data:u}=await sb.from('users').select('*').eq('phone',phone).maybeSingle();
+    if(!u){
+      const r=await sb.from('users').insert({phone,name,pass_hash:pass}).select().single();
+      u=r.data;
+    }
+    return u;
+  });
+}
+
+async function sbTgLogin(tgId,name){
+  if(!sb) return null;
+  return sq(async()=>{
+    let {data:u}=await sb.from('users').select('*').eq('telegram_id',tgId).maybeSingle();
+    if(!u){
+      const r=await sb.from('users').insert({telegram_id:tgId,name}).select().single();
+      u=r.data;
+    }
+    return u;
+  });
+}
+
+async function sbGetUserByPhone(phone){
+  if(!sb) return null;
+  return sq(async()=>{
+    const {data}=await sb.from('users').select('*').eq('phone',phone).maybeSingle();
+    return data;
+  });
+}
+
+async function sbGetProfile(uid){
+  if(!sb||!uid) return null;
+  return sq(async()=>{
+    const {data}=await sb.from('profiles')
+      .select('*,users!inner(id,phone,name,telegram_id)')
+      .eq('user_id',uid).maybeSingle();
+    return data;
+  });
+}
+
+async function sbSaveProfile(uid,prof){
+  if(!sb||!uid) return;
+  await sq(async()=>{
+    const {data:ex}=await sb.from('profiles').select('id').eq('user_id',uid).maybeSingle();
+    if(ex) await sb.from('profiles').update({...prof,updated_at:new Date().toISOString()}).eq('user_id',uid);
+    else   await sb.from('profiles').insert({user_id:uid,...prof});
+  });
+}
+
+async function sbSearchWorkers(jobFilter,q){
+  if(!sb) return null;
+  return sq(async()=>{
+    let query=sb.from('profiles')
+      .select('*,users!inner(id,phone,name)')
+      .eq('is_ready',true).not('job','is',null).neq('job','');
+    if(jobFilter) query=query.ilike('job',`%${jobFilter}%`);
+    const {data}=await query.order('rating',{ascending:false}).limit(60);
+    if(!data) return [];
+    let res=data.filter(p=>p.user_id!==me?.id);
+    if(q) res=res.filter(p=>
+      p.job?.toLowerCase().includes(q.toLowerCase())||
+      p.users?.name?.toLowerCase().includes(q.toLowerCase())||
+      p.city?.toLowerCase().includes(q.toLowerCase())
+    );
+    return res;
+  });
+}
+
+async function sbCreateJob(fromId,toId,data){
+  if(!sb) return null;
+  return sq(async()=>{
+    const {data:d}=await sb.from('jobs').insert({
+      from_id:fromId,to_id:toId,
+      title:data.title,description:data.desc,
+      price:data.price||0,job_date:data.date||null,job_time:data.time||null,
+      city:data.city||null,district:data.district||null,address:data.addr||null,
+      status:'pending'
+    }).select().single();
+    return d;
+  });
+}
+
+async function sbGetJobs(uid){
+  if(!sb||!uid) return null;
+  return sq(async()=>{
+    const {data}=await sb.from('jobs')
+      .select('*,fu:users!jobs_from_id_fkey(id,phone,name),tu:users!jobs_to_id_fkey(id,phone,name)')
+      .or(`from_id.eq.${uid},to_id.eq.${uid}`)
+      .order('created_at',{ascending:false});
+    return data||[];
+  });
+}
+
+async function sbUpdateJob(jobId,status){
+  if(!sb) return;
+  await sq(async()=>{ await sb.from('jobs').update({status}).eq('id',jobId); });
+}
+
+async function sbGetMsgs(uid1,uid2){
+  if(!sb||!uid1||!uid2) return [];
+  return sq(async()=>{
+    const {data}=await sb.from('messages')
+      .select('*')
+      .or(`and(from_id.eq.${uid1},to_id.eq.${uid2}),and(from_id.eq.${uid2},to_id.eq.${uid1})`)
+      .order('created_at',{ascending:true}).limit(200);
+    return data||[];
+  })||[];
+}
+
+async function sbSendMsg(fromId,toId,text){
+  if(!sb) return null;
+  return sq(async()=>{
+    const {data}=await sb.from('messages').insert({from_id:fromId,to_id:toId,text}).select().single();
+    return data;
+  });
+}
+
+async function sbGetChatList(uid){
+  if(!sb||!uid) return [];
+  return sq(async()=>{
+    const {data}=await sb.from('messages')
+      .select('from_id,to_id,text,created_at')
+      .or(`from_id.eq.${uid},to_id.eq.${uid}`)
+      .order('created_at',{ascending:false}).limit(100);
+    return data||[];
+  })||[];
+}
+
+function sbSubscribe(uid1,uid2,cb){
+  sbUnsub();
+  if(!sb) return;
+  // Realtime — to_id filteri bilan yangi xabarlarni tinglash
+  activeSub = sb
+    .channel('chat_'+uid1.slice(0,8)+'_'+uid2.slice(0,8))
+    .on(
+      'postgres_changes',
+      { event:'INSERT', schema:'public', table:'messages' },
+      (payload) => {
+        const m = payload.new;
+        // Faqat bu suhbatga tegishli xabarlarni qabul qilish
+        if(
+          (m.from_id===uid1 && m.to_id===uid2) ||
+          (m.from_id===uid2 && m.to_id===uid1)
+        ){
+          cb(m);
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log('Realtime status:', status);
+    });
+}
+function sbUnsub(){ if(activeSub){sb?.removeChannel(activeSub);activeSub=null;} }
+
+async function sbGetReviews(uid){
+  if(!sb||!uid) return [];
+  return sq(async()=>{
+    const {data}=await sb.from('reviews')
+      .select('*,fu:users!reviews_from_id_fkey(id,name)')
+      .eq('to_id',uid).order('created_at',{ascending:false});
+    return data||[];
+  })||[];
+}
+
+async function sbAddReview(fromId,toId,jobId,stars,text){
+  if(!sb) return;
+  await sq(async()=>{ await sb.from('reviews').insert({from_id:fromId,to_id:toId,job_id:jobId||null,stars,text}); });
+}
+
+function p2local(p){
+  return {
+    id:p.user_id, phone:p.users?.phone||'', name:p.users?.name||'',
+    job:p.job||'', price:p.price||0, exp:p.exp||0,
+    city:p.city||'', district:p.district||'', bio:p.bio||'',
+    isReady:p.is_ready, rating:p.rating||0,
+    done:p.done_count||0, reviewCount:p.review_count||0
+  };
+}
+function j2local(j){
+  return {
+    id:'j'+j.id, sbId:j.id,
+    fromId:j.from_id, toId:j.to_id,
+    from:j.fu?.phone||j.from_id, to:j.tu?.phone||j.to_id,
+    fromName:j.fu?.name||'', toName:j.tu?.name||'',
+    title:j.title||'', desc:j.description||'',
+    price:j.price||0, date:j.job_date||'',
+    city:j.city||'', district:j.district||'', addr:j.address||'',
+    status:j.status||'pending', created:new Date(j.created_at).getTime()
+  };
+}
+
+// ── UTILS ─────────────────────────────────────────────
+function $id(id){ return document.getElementById(id); }
+function toast(msg){ const e=$id('toast'); e.textContent=msg; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'),2500); }
+function showErr(id,msg){ const e=$id(id); if(!e) return; e.textContent=msg; e.classList.add('show'); }
+function hideErr(id){ const e=$id(id); if(e){e.textContent='';e.classList.remove('show');} }
+function fmtPhone(el){ el.value=el.value.replace(/\D/g,'').slice(0,9); }
+function toggleEye(id,el){ const i=$id(id); i.type=i.type==='password'?'text':'password'; el.textContent=i.type==='password'?'👁':'🙈'; }
+function tStr(ts){ return new Date(ts).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'}); }
+
+// ── NAVIGATION ────────────────────────────────────────
+const _stack=[];
+function goTo(id){
+  const cur=document.querySelector('.screen.active')?.id;
+  if(cur&&cur!==id) _stack.push(cur);
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const s=$id(id); if(!s) return;
+  s.classList.add('active');
+  applyLang();
+  if(id==='s-home') loadHome();
+  else if(id==='s-search'){ buildFilters(); doSearch(); }
+  else if(id==='s-jobs') loadJobs();
+  else if(id==='s-chat') loadChatList();
+  else if(id==='s-profile') loadProfile();
+  else if(id==='s-my-reviews') loadMyReviews();
+  else if(id==='s-profile-edit') initProfileEdit();
+}
+function goBack(){
+  if(!_stack.length){ goTo('s-home'); return; }
+  const prev=_stack.pop();
+  if(document.querySelector('.screen.active')?.id==='s-chat-open') sbUnsub();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=$id(prev); if(el) el.classList.add('active');
+  applyLang();
+}
+
+// ── TELEGRAM ──────────────────────────────────────────
+function initTelegram(){
+  try{
+    const tg=window.Telegram?.WebApp;
+    if(!tg?.initDataUnsafe?.user) return;
+    tg.ready(); tg.expand();
+    tg.BackButton.onClick(()=>goBack());
+    const u=tg.initDataUnsafe.user;
+    const name=[u.first_name,u.last_name].filter(Boolean).join(' ')||u.username||'User';
+    sbTgLogin(u.id,name).then(async sbU=>{
+      if(!sbU) return;
+      me={id:sbU.id,phone:sbU.phone||'',name:sbU.name};
+      const pr=await sbGetProfile(sbU.id);
+      if(pr){ myProf=pr; const loc=p2local(pr); saveProf(sbU.id,loc); }
+      goTo('s-home');
+    });
+  }catch(e){}
+}
+
+// ── AUTH ──────────────────────────────────────────────
+async function doLogin(){
+  hideErr('l-err');
+  const phone=$id('lp').value.replace(/\D/g,'');
+  const pass=$id('lpw').value;
+  if(phone.length<9) return showErr('l-err',t('err_phone'));
+  if(pass.length<6)  return showErr('l-err',t('err_pass'));
+  if(!sb) return showErr('l-err','Supabase ulanmagan');
+  const u=await sbGetUserByPhone(phone);
+  if(!u||u.pass_hash!==pass) return showErr('l-err',t('err_login'));
+  me={id:u.id,phone:u.phone,name:u.name};
+  const pr=await sbGetProfile(u.id);
+  if(pr){ myProf=pr; saveProf(u.id,p2local(pr)); }
+  goTo('s-home');
+}
+
+async function doRegister(){
+  hideErr('r-err');
+  const name=$id('rn').value.trim();
+  const phone=$id('rp').value.replace(/\D/g,'');
+  const pass=$id('rpw').value;
+  const pass2=$id('rpw2').value;
+  if(!name)          return showErr('r-err',t('err_name'));
+  if(phone.length<9) return showErr('r-err',t('err_phone'));
+  if(pass.length<6)  return showErr('r-err',t('err_pass'));
+  if(pass!==pass2)   return showErr('r-err',t('err_pass2'));
+  if(sb){
+    const ex=await sbGetUserByPhone(phone);
+    if(ex) return showErr('r-err',t('err_exists'));
+  }
+  pendingReg={name,phone,pass};
+  $id('v-desc').textContent=`+998 ${phone}`;
+  startTimer();
+  goTo('s-verify');
+}
+
+async function doVerify(){
+  hideErr('v-err');
+  const code=$id('v-code').value.trim();
+  if(code.length<4) return showErr('v-err',t('err_code'));
+  if(!pendingReg) return goTo('s-login');
+  const {name,phone,pass}=pendingReg;
+  const u=await sbGetOrCreate(phone,name,pass);
+  if(!u) return showErr('v-err',t('err_login'));
+  me={id:u.id,phone,name};
+  pendingReg=null;
+  clearInterval(timerInt);
+  toast('✅');
+  goTo('s-home');
+}
+
+function startTimer(sec=30){
+  clearInterval(timerInt);
+  $id('resend-btn').style.display='none';
+  let s=sec;
+  $id('resend-timer').textContent=`${s}s`;
+  timerInt=setInterval(()=>{
+    s--;
+    if(s<=0){ clearInterval(timerInt); $id('resend-timer').textContent=''; $id('resend-btn').style.display='inline'; }
+    else $id('resend-timer').textContent=`${s}s`;
+  },1000);
+}
+function resendOTP(){ startTimer(); toast('SMS yuborildi'); }
+
+async function doForgot(){
+  hideErr('f-err');
+  const phone=$id('fp').value.replace(/\D/g,'');
+  if(phone.length<9) return showErr('f-err',t('err_phone'));
+  pendingReg={phone,isForgot:true};
+  startTimer();
+  goTo('s-verify');
+}
+
+function doNewPass(){
+  hideErr('np-err');
+  const p1=$id('np1').value, p2=$id('np2').value;
+  if(p1.length<6) return showErr('np-err',t('err_pass'));
+  if(p1!==p2)     return showErr('np-err',t('err_pass2'));
+  toast(t('save')); goTo('s-login');
+}
+
+function doLogout(){
+  me=null; myProf=null;
+  _cache.jobs.length=0; Object.keys(_cache.profs).forEach(k=>delete _cache.profs[k]);
+  sbUnsub(); goTo('s-login');
+}
+
+// ── HOME ──────────────────────────────────────────────
+async function loadHome(){
+  if(!me) return;
+  $id('h-name').textContent=me.name?.split(' ')[0]||'—';
+  let pr=getProf(me.id)||{};
+  if(sb&&me.id){
+    const sp=await sbGetProfile(me.id);
+    if(sp){ myProf=sp; pr=p2local(sp); saveProf(me.id,pr); }
+  }
+  $id('h-done').textContent=pr.done||0;
+  $id('h-rating').textContent=pr.rating||'—';
+  $id('h-revs').textContent=pr.reviewCount||0;
+  $id('h-tog').checked=pr.isReady!==false;
+
+  let jobs=getJobsCache();
+  if(sb&&me.id){
+    const sj=await sbGetJobs(me.id);
+    if(sj){ jobs=sj.map(j2local); saveJobsCache(jobs); }
+  }
+  const recent=jobs.slice(0,3);
+  const el=$id('h-recent');
+  el.innerHTML=recent.length?recent.map(miniCard).join(''):
+    `<div class="no-data"><div class="nd-ico">💼</div>${t('job_empty')}</div>`;
+}
+
+function miniCard(j){
+  const isIn=j.toId===me.id;
+  const name=isIn?j.fromName:j.toName;
+  const sc=stClass(j.status);
+  return `<div class="job-card" style="cursor:pointer" onclick="openChat('${isIn?j.fromId:j.toId}')">
+    <div class="jc-top">
+      <div><div class="jc-title">${j.title}</div><div class="jc-from">${isIn?'📨':'📤'} ${name}</div></div>
+      <span class="badge ${sc}">${stLabel(j.status)}</span>
+    </div>
+    ${j.price>0?`<div class="jc-meta"><span class="badge gold">💰 ${Number(j.price).toLocaleString()} ${t('som')}</span></div>`:''}
+  </div>`;
+}
+
+async function toggleReady(el){
+  const v=el.checked;
+  if(sb&&me.id) await sbSaveProfile(me.id,{is_ready:v});
+  const pr=getProf(me.id)||{};
+  saveProf(me.id,{...pr,isReady:v});
+}
+
+// ── SEARCH ────────────────────────────────────────────
+function buildFilters(){
+  const row=$id('filter-row');
+  const filters=[
+    {key:'',label:t('all')},
+    {key:'Elektrik',label:'⚡'},
+    {key:'Santexnik',label:'🔧'},
+    {key:'Quruvchi',label:'🏗'},
+    {key:'Oshpaz',label:'🍳'},
+    {key:'Haydovchi',label:'🚗'},
+    {key:'Repetitor',label:'📚'},
+    {key:'Fotograf',label:'📷'},
+  ];
+  row.innerHTML=filters.map(f=>
+    `<div class="fchip${srchFilter===f.key?' on':''}" onclick="setFilter(this,'${f.key}')">${f.key===''?t('all'):getJobName(f.key)}</div>`
+  ).join('');
+}
+
+function setFilter(el,job){
+  srchFilter=job;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  doSearch();
+}
+
+async function doSearch(){
+  const q=($id('sq')?.value||'').trim();
+  const el=$id('s-results');
+  if(!el) return;
+  el.innerHTML=`<div class="no-data"><div class="nd-ico">⏳</div>${t('searching')}</div>`;
+  const res=await sbSearchWorkers(srchFilter,q);
+  if(!res||!res.length){ el.innerHTML=`<div class="no-data"><div class="nd-ico">🔍</div>${t('no_result')}</div>`; return; }
+  el.innerHTML=res.map(p=>{
+    const u={id:p.user_id,phone:p.users?.phone||'',name:p.users?.name||'',
+      job:p.job||'',price:p.price||0,exp:p.exp||0,city:p.city||'',
+      district:p.district||'',rating:p.rating||0,done:p.done_count||0,
+      reviewCount:p.review_count||0,bio:p.bio||''};
+    saveProf(u.id,u);
+    const jn=getJobName(u.job);
+    const rat=u.rating?`<span style="color:var(--gold);font-size:13px;font-weight:800">⭐${u.rating}</span>`:'';
+    const pr=u.price>0?`<span class="badge gold">💰 ${Number(u.price).toLocaleString()} ${t('som')}</span>`:'';
+    const exp=u.exp?`<span class="badge gray">📅 ${u.exp} ${t('yil')}</span>`:'';
+    const loc=locStr(u.city,u.district);
+    const locBadge=loc?`<span class="badge gray">📍 ${loc}</span>`:'';
+    return `<div class="uc" onclick='openUserDetail("${u.id}")'>
+      <div class="uc-av">${u.name?.[0]?.toUpperCase()||'?'}</div>
+      <div class="uc-info">
+        <div class="uc-name">${u.name}</div>
+        <div class="uc-job">${jn}</div>
+        <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap">${pr}${exp}${locBadge}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">${rat}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── USER DETAIL ───────────────────────────────────────
+async function openUserDetail(uid){
+  const pr=getProf(uid)||{};
+  viewingUser={...pr,id:uid};
+  renderUD();
+  goTo('s-user-detail');
+  if(sb&&uid){
+    const sp=await sbGetProfile(uid);
+    if(sp){ const loc=p2local(sp); saveProf(uid,loc); viewingUser={...loc,id:uid}; renderUD(); }
+  }
+  loadUdReviews(uid);
+}
+
+function renderUD(){
+  const u=viewingUser||{};
+  $id('ud-av').textContent=u.name?.[0]?.toUpperCase()||'?';
+  $id('ud-name').textContent=u.name||'—';
+  $id('ud-job').textContent=getJobName(u.job)||'—';
+  $id('ud-rating').textContent=`⭐ ${u.rating||0} · ${u.reviewCount||0} sharh`;
+  $id('ud-price').textContent=u.price>0?`${Number(u.price).toLocaleString()} ${t('som')}`:'—';
+  $id('ud-exp').textContent=u.exp?`${u.exp} ${t('yil')}`:'—';
+  $id('ud-loc').textContent=locStr(u.city,u.district)||'—';
+  $id('ud-bio').textContent=u.bio||'—';
+}
+
+function refreshUdLang(){ renderUD(); }
+
+async function loadUdReviews(uid){
+  const revs=await sbGetReviews(uid);
+  const el=$id('ud-reviews');
+  if(!revs.length){ el.innerHTML=`<div class="no-data" style="padding:20px">${t('no_result')}</div>`; return; }
+  el.innerHTML=revs.map(r=>`<div class="card" style="margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-weight:800;font-size:13px">${r.fu?.name||'—'}</span>
+      <span style="color:var(--gold)">★ ${r.stars}</span>
+    </div>
+    <div style="font-size:13px;color:var(--muted)">${r.text||''}</div>
+  </div>`).join('');
+}
+
+function openOfferToViewing(){
+  if(!viewingUser) return;
+  fillCitySelects();
+  $id('offer-av').textContent=viewingUser.name?.[0]?.toUpperCase()||'?';
+  $id('offer-name').textContent=viewingUser.name||'—';
+  $id('offer-job').textContent=getJobName(viewingUser.job)||'—';
+  $id('o-desc').value='';
+  $id('o-price').value='';
+  $id('o-date').value='';
+  $id('o-time').value='';
+  $id('o-city').value='';
+  $id('o-district').innerHTML='<option value="">—</option>';
+  $id('o-addr').value='';
+  hideErr('o-err');
+  goTo('s-offer');
+}
+
+function chatWithViewing(){
+  if(!viewingUser) return;
+  openChat(viewingUser.id);
+}
+
+// ── OFFER ─────────────────────────────────────────────
+function fillOfferDistricts(){
+  const key=$id('o-city').value;
+  const sel=$id('o-district');
+  sel.innerHTML='<option value="">—</option>';
+  getDistricts(key).forEach(d=>{
+    const o=document.createElement('option');
+    o.value=d; o.textContent=d; sel.appendChild(o);
+  });
+}
+
+async function sendOffer(){
+  hideErr('o-err');
+  const desc=($id('o-desc').value||'').trim();
+  if(!desc) return showErr('o-err',t('err_desc'));
+  const price=Number($id('o-price').value)||0;
+  const date=$id('o-date').value;
+  const time=$id('o-time').value;
+  const city=$id('o-city').value;
+  const district=$id('o-district').value;
+  const addr=$id('o-addr').value;
+  const title=desc.slice(0,60);
+
+  let sbJobId=null;
+  if(sb&&me.id&&viewingUser.id){
+    const sj=await sbCreateJob(me.id,viewingUser.id,{title,desc,price,date,time,city,district,addr});
+    if(sj){
+      sbJobId=sj.id;
+      const jloc=j2local({...sj,fu:{id:me.id,phone:me.phone,name:me.name},tu:{id:viewingUser.id,phone:viewingUser.phone||'',name:viewingUser.name}});
+      const jobs=getJobsCache(); jobs.unshift(jloc); saveJobsCache(jobs);
+    }
+  }
+
+  // Chat xabari
+  const priceStr=price?' | 💰 '+Number(price).toLocaleString()+' '+t('som'):'';
+  const dateStr=date?' | 📅 '+date:'';
+  const msgText='💼 '+title+priceStr+dateStr;
+  if(sb&&me.id&&viewingUser.id) await sbSendMsg(me.id,viewingUser.id,msgText);
+
+  toast(t('toast_offer'));
+  openChat(viewingUser.id);
+}
+
+// ── JOBS ──────────────────────────────────────────────
+async function loadJobs(){
+  let jobs=getJobsCache();
+  if(sb&&me.id){
+    const sj=await sbGetJobs(me.id);
+    if(sj){ jobs=sj.map(j2local); saveJobsCache(jobs); }
+  }
+  $id('jl-in').innerHTML=jobListHtml(jobs.filter(j=>j.toId===me.id),true);
+  $id('jl-out').innerHTML=jobListHtml(jobs.filter(j=>j.fromId===me.id),false);
+  switchJobTab(jobsTab);
+}
+
+function switchJobTab(tab){
+  jobsTab=tab;
+  const tin=$id('jt-in'),tout=$id('jt-out');
+  const lin=$id('jl-in'),lout=$id('jl-out');
+  if(tab==='in'){
+    tin.style.cssText='flex:1;padding:10px;border-radius:var(--r) 0 0 var(--r);border:1.5px solid var(--gold);background:var(--gold);color:#000;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer';
+    tout.style.cssText='flex:1;padding:10px;border-radius:0 var(--r) var(--r) 0;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer';
+    lin.style.display=''; lout.style.display='none';
+  } else {
+    tout.style.cssText='flex:1;padding:10px;border-radius:0 var(--r) var(--r) 0;border:1.5px solid var(--gold);background:var(--gold);color:#000;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer';
+    tin.style.cssText='flex:1;padding:10px;border-radius:var(--r) 0 0 var(--r);border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer';
+    lin.style.display='none'; lout.style.display='';
+  }
+  tin.textContent=t('jobs_in'); tout.textContent=t('jobs_out');
+}
+
+function jobListHtml(jobs,incoming){
+  if(!jobs.length) return `<div class="no-data"><div class="nd-ico">💼</div>${t('job_empty')}</div>`;
+  return jobs.map(j=>{
+    const sc=stClass(j.status);
+    const name=incoming?j.fromName:j.toName;
+    const peerId=incoming?j.fromId:j.toId;
+    let btns='';
+    if(incoming&&j.status==='pending'){
+      btns+=`<button class="bsm green" onclick="jobAct('${j.sbId}','active')">${t('jca_accept')}</button>`;
+      btns+=`<button class="bsm danger" onclick="jobAct('${j.sbId}','cancelled')">${t('jca_reject')}</button>`;
+    }
+    if(incoming&&j.status==='active'){
+      btns+=`<button class="bsm purple" onclick="jobAct('${j.sbId}','done_worker')">${t('jca_finish')}</button>`;
+    }
+    if(!incoming&&j.status==='done_worker'){
+      btns+=`<button class="bsm gold" onclick="jobAct('${j.sbId}','done')">${t('jca_cfirm')}</button>`;
+    }
+    if(j.status==='done'){
+      btns+=`<button class="bsm gold" onclick="openRate('${peerId}','${j.sbId}')">⭐</button>`;
+    }
+    btns+=`<button class="bsm gray" onclick="openChat('${peerId}')">💬</button>`;
+    return `<div class="job-card">
+      <div class="jc-top">
+        <div><div class="jc-title">${j.title}</div><div class="jc-from">${incoming?'📨':'📤'} ${name}</div></div>
+        <span class="badge ${sc}">${stLabel(j.status)}</span>
+      </div>
+      <div class="jc-meta">
+        ${j.price>0?`<span class="badge gold">💰 ${Number(j.price).toLocaleString()} ${t('som')}</span>`:''}
+        ${j.date?`<span class="badge gray">📅 ${j.date}</span>`:''}
+        ${j.city?`<span class="badge gray">📍 ${locStr(j.city,j.district)}</span>`:''}
+      </div>
+      <div class="jc-btns">${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+async function jobAct(sbId,status){
+  if(!sb||!sbId) return;
+  await sbUpdateJob(sbId,status);
+  const toastMap={active:'toast_accepted',cancelled:'toast_rejected',done_worker:'toast_finished',done:'toast_done'};
+  toast(t(toastMap[status]||'save'));
+  loadJobs();
+}
+
+// ── CHAT LIST ─────────────────────────────────────────
+async function loadChatList(){
+  const el=$id('chat-list');
+  el.innerHTML=`<div class="no-data"><div class="nd-ico">⏳</div>${t('loading')}</div>`;
+  if(!sb||!me.id){ el.innerHTML=`<div class="no-data"><div class="nd-ico">💬</div>${t('chat_empty')}</div>`; return; }
+  const msgs=await sbGetChatList(me.id);
+  if(!msgs.length){ el.innerHTML=`<div class="no-data"><div class="nd-ico">💬</div>${t('chat_empty')}</div>`; return; }
+  const peerMap=new Map();
+  msgs.forEach(m=>{ const pid=m.from_id===me.id?m.to_id:m.from_id; if(!peerMap.has(pid)) peerMap.set(pid,m); });
+  const items=await Promise.all([...peerMap.entries()].map(async([pid,last])=>{
+    const {data:pu}=await sb.from('users').select('id,name').eq('id',pid).maybeSingle().catch(()=>({data:null}));
+    if(!pu) return '';
+    const {data:pp}=await sb.from('profiles').select('job').eq('user_id',pid).maybeSingle().catch(()=>({data:null}));
+    saveProf(pid,{id:pid,name:pu.name,job:pp?.job||''});
+    const t2=new Date(last.created_at).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="ci" onclick="openChat('${pid}')">
+      <div class="ci-av">${pu.name?.[0]?.toUpperCase()||'?'}</div>
+      <div class="ci-info"><div class="ci-name">${pu.name}</div><div class="ci-last">${(last.text||'').slice(0,50)}</div></div>
+      <div class="ci-time">${t2}</div>
+    </div>`;
+  }));
+  el.innerHTML=items.filter(Boolean).join('')||`<div class="no-data"><div class="nd-ico">💬</div>${t('chat_empty')}</div>`;
+}
+
+// ── CHAT OPEN ─────────────────────────────────────────
+async function openChat(peerId){
+  if(!peerId) return;
+  activeChat={id:peerId, name:'...', job:'—'};
+  $id('ct-av').textContent='?';
+  $id('ct-name').textContent='...';
+  $id('ct-job').textContent='—';
+  goTo('s-chat-open');
+
+  // Peer ma'lumotlarini olish
+  const cached=getProf(peerId);
+  if(cached.name){
+    activeChat={...activeChat,name:cached.name,job:cached.job||'—'};
+    $id('ct-av').textContent=cached.name?.[0]?.toUpperCase()||'?';
+    $id('ct-name').textContent=cached.name;
+    $id('ct-job').textContent=getJobName(cached.job)||'—';
+  }
+  if(sb&&peerId){
+    const {data:pu}=await sb.from('users').select('id,name').eq('id',peerId).maybeSingle().catch(()=>({data:null}));
+    const {data:pp}=await sb.from('profiles').select('job').eq('user_id',peerId).maybeSingle().catch(()=>({data:null}));
+    if(pu){
+      activeChat={id:peerId,name:pu.name,job:pp?.job||'—'};
+      saveProf(peerId,{id:peerId,name:pu.name,job:pp?.job||''});
+      $id('ct-av').textContent=pu.name?.[0]?.toUpperCase()||'?';
+      $id('ct-name').textContent=pu.name;
+      $id('ct-job').textContent=getJobName(pp?.job)||'—';
+    }
+  }
+  await renderMsgs();
+  if(sb&&me.id&&peerId){
+    setTimeout(()=>{
+      sbSubscribe(me.id, peerId, (msg)=>{
+        const el=$id('chat-msgs');
+        // Duplicate tekshirish
+        const exists = el.querySelector(`[data-msgid="${msg.id}"]`);
+        if(exists) return;
+        const wrap = buildMsgEl(msg);
+        if(wrap){ wrap.setAttribute('data-msgid', msg.id||''); el.appendChild(wrap); }
+        el.scrollTop=el.scrollHeight;
+      });
+    }, 300);
+  }
+}
+
+function viewPeer(){
+  if(!activeChat) return;
+  openUserDetail(activeChat.id);
+}
+
+async function renderMsgs(){
+  const el=$id('chat-msgs');
+  el.innerHTML='';
+  if(!activeChat?.id){ el.innerHTML=`<div class="msg-sys">${t('chat_empty')}</div>`; return; }
+  const msgs=await sbGetMsgs(me.id,activeChat.id);
+  if(!msgs.length){ el.innerHTML=`<div class="msg-sys">👋</div>`; }
+  else msgs.forEach(m=>{ try{ el.appendChild(buildMsgEl(m)); }catch(e){} });
+  el.scrollTop=el.scrollHeight;
+}
+
+function buildMsgEl(m){
+  const isOut=m.from_id===me.id;
+  const t2=new Date(m.created_at).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});
+  if(m.text?.startsWith('💼')){
+    // Job karta topishga harakat
+    const jobs=getJobsCache();
+    const job=jobs.find(j=>
+      m.text.includes((j.title||'').slice(0,10)) &&
+      (j.fromId===me.id||j.toId===me.id)
+    );
+    if(job) return buildJobCard(job,isOut,t2);
+  }
+  const wrap=document.createElement('div');
+  wrap.className=`msg ${isOut?'out':'in'}`;
+  wrap.innerHTML=`<div class="msg-bubble">${m.text||''}</div><div class="msg-time">${t2}</div>`;
+  return wrap;
+}
+
+function buildJobCard(job,isOut,t2){
+  const isSender=job.fromId===me.id;
+  const isReceiver=job.toId===me.id;
+  const st=job.status||'pending';
+  const sc=stClass(st);
+  const stCls={gold:'p',green:'a',purple:'d',danger:'c',gray:'w'}[sc]||'p';
+  const sl=stLabel(st);
+  let btns='';
+  if(st==='pending'&&isReceiver){
+    btns=`<button class="jmc-btn accept" onclick="chatJobAct('${job.sbId}','active')">${t('jca_accept')}</button>
+          <button class="jmc-btn reject" onclick="chatJobAct('${job.sbId}','cancelled')">${t('jca_reject')}</button>`;
+  } else if(st==='active'&&isReceiver){
+    btns=`<button class="jmc-btn finish" onclick="chatJobAct('${job.sbId}','done_worker')">${t('jca_finish')}</button>`;
+  } else if(st==='active'&&isSender){
+    btns=`<button class="jmc-btn confirm" onclick="chatJobAct('${job.sbId}','done_worker')">${t('jca_confirm')}</button>`;
+  } else if(st==='done_worker'&&isSender){
+    btns=`<button class="jmc-btn confirm" onclick="chatJobAct('${job.sbId}','done')">${t('jca_cfirm')}</button>`;
+  }
+  const meta=[
+    job.price>0?`<span class="badge gold">💰 ${Number(job.price).toLocaleString()} ${t('som')}</span>`:'',
+    job.date?`<span class="badge gray">📅 ${job.date}</span>`:'',
+    job.city?`<span class="badge gray">📍 ${locStr(job.city,job.district)}</span>`:'',
+  ].filter(Boolean).join('');
+  const wrap=document.createElement('div');
+  wrap.className=`msg-job ${isOut?'out':'in'}`;
+  wrap.innerHTML=`<div class="jmc">
+    <div class="jmc-hd">
+      <span style="font-size:20px">💼</span>
+      <span class="jmc-t">${job.title}</span>
+      <span class="jmc-st ${stCls}">${sl}</span>
+    </div>
+    ${meta?`<div class="jmc-meta">${meta}</div>`:''}
+    ${btns?`<div class="jmc-btns">${btns}</div>`:''}
+  </div>
+  <div class="jmc-time">${t2}</div>`;
+  return wrap;
+}
+
+async function chatJobAct(sbId,status){
+  if(!sb||!sbId) return;
+  await sbUpdateJob(sbId,status);
+  // Cache ni yangilash
+  const jobs=getJobsCache();
+  const idx=jobs.findIndex(j=>j.sbId===sbId);
+  if(idx>=0) jobs[idx].status=status;
+  saveJobsCache(jobs);
+  const toastMap={active:'toast_accepted',cancelled:'toast_rejected',done_worker:'toast_finished',done:'toast_done'};
+  toast(t(toastMap[status]||'save'));
+  renderMsgs();
+}
+
+async function sendMsg(){
+  const inp=$id('chat-inp');
+  const text=inp.value.trim();
+  if(!text||!activeChat?.id) return;
+  inp.value='';
+  const el=$id('chat-msgs');
+  const wrap=document.createElement('div');
+  wrap.className='msg out';
+  wrap.innerHTML=`<div class="msg-bubble">${text}</div><div class="msg-time">${tStr(Date.now())}</div>`;
+  el.appendChild(wrap);
+  el.scrollTop=el.scrollHeight;
+  if(sb&&me.id) await sbSendMsg(me.id,activeChat.id,text);
+}
+
+// ── PROFILE ───────────────────────────────────────────
+async function loadProfile(){
+  if(!me) return;
+  let pr=getProf(me.id)||{};
+  if(sb&&me.id){
+    const sp=await sbGetProfile(me.id);
+    if(sp){ myProf=sp; pr=p2local(sp); saveProf(me.id,pr); }
+  }
+  $id('p-av').textContent=me.name?.[0]?.toUpperCase()||'?';
+  $id('p-name').textContent=me.name||'—';
+  $id('p-job').textContent=getJobName(pr.job)||t('job_ph');
+  $id('p-rating').textContent=`⭐ ${pr.rating||0} · ${pr.reviewCount||0}`;
+  $id('p-price').textContent=pr.price>0?`${Number(pr.price).toLocaleString()} ${t('som')}`:'—';
+  $id('p-exp').textContent=pr.exp?`${pr.exp} ${t('yil')}`:'—';
+  $id('p-loc').textContent=locStr(pr.city,pr.district)||'—';
+  $id('p-bio').textContent=pr.bio||t('bio_ph');
+}
+
+function initProfileEdit(){
+  const pr=getProf(me.id)||{};
+  $id('pe-name').value=me.name||'';
+  $id('pe-price').value=pr.price||'';
+  $id('pe-exp').value=pr.exp||'';
+  $id('pe-bio').value=pr.bio||'';
+  $id('pe-job').value=pr.job||'';
+  $id('jd-inp').value=getJobName(pr.job)||'';
+  fillCitySelects();
+  buildJobOpts();
+  if(pr.city){
+    setTimeout(()=>{
+      $id('pe-city').value=pr.city;
+      fillPeDistricts();
+      setTimeout(()=>{ if(pr.district) $id('pe-district').value=pr.district; },50);
+    },50);
+  }
+}
+
+async function saveProfile(){
+  const name=$id('pe-name').value.trim();
+  const job=$id('pe-job').value;
+  const price=Number($id('pe-price').value)||0;
+  const exp=Number($id('pe-exp').value)||0;
+  const city=$id('pe-city').value;
+  const district=$id('pe-district').value;
+  const bio=$id('pe-bio').value.trim();
+  if(name) me.name=name;
+  saveProf(me.id,{job,price,exp,city,district,bio,isReady:true});
+  if(sb&&me.id){
+    await sbSaveProfile(me.id,{job,price,exp,city,district,bio,is_ready:true});
+    if(name) await sq(async()=>await sb.from('users').update({name}).eq('id',me.id));
+  }
+  toast(t('toast_prof'));
+  goBack();
+}
+
+// ── JOB DROPDOWN ─────────────────────────────────────
+function buildJobOpts(){
+  const el=$id('job-opts');
+  if(!el) return;
+  el.innerHTML=getJobs().map((j,i)=>
+    `<div class="job-opt" onclick="selectJob('${JOBS_UZ[i]||j}','${j}')">${j}</div>`
+  ).join('');
+}
+function openJobDrop(){
+  buildJobOpts();
+  $id('job-drop').classList.add('open');
+  $id('jd-inp').classList.add('open');
+}
+function filterJobDrop(q){
+  $id('job-drop').classList.add('open');
+  const ql=q.toLowerCase();
+  document.querySelectorAll('.job-opt').forEach(el=>{
+    el.classList.toggle('hide',!el.textContent.toLowerCase().includes(ql));
+  });
+}
+function selectJob(uzKey, displayName){
+  $id('pe-job').value=uzKey;
+  $id('jd-inp').value=displayName;
+  $id('job-drop').classList.remove('open');
+  $id('jd-inp').classList.remove('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.job-wrap')){
+    $id('job-drop')?.classList.remove('open');
+    $id('jd-inp')?.classList.remove('open');
+  }
+});
+
+function fillPeDistricts(){
+  const key=$id('pe-city').value;
+  const sel=$id('pe-district');
+  sel.innerHTML='<option value="">—</option>';
+  getDistricts(key).forEach(d=>{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+}
+
+// ── REVIEWS ───────────────────────────────────────────
+async function loadMyReviews(){
+  const revs=await sbGetReviews(me.id);
+  const el=$id('my-rev-list');
+  if(!revs.length){ el.innerHTML=`<div class="no-data"><div class="nd-ico">💬</div>${t('no_result')}</div>`; return; }
+  el.innerHTML=revs.map(r=>`<div class="card">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-weight:800;font-size:13px">${r.fu?.name||'—'}</span>
+      <span style="color:var(--gold)">★ ${r.stars}</span>
+    </div>
+    <div style="font-size:13px;color:var(--muted)">${r.text||''}</div>
+  </div>`).join('');
+}
+
+function openRate(peerId,jobId){
+  rateTarget=peerId; rateJobId=jobId||null; selStar=0;
+  document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
+  $id('rate-text').value='';
+  const pr=getProf(peerId)||{};
+  $id('rate-av').textContent=pr.name?.[0]?.toUpperCase()||'?';
+  $id('rate-name').textContent=pr.name||'—';
+  $id('rate-job').textContent=getJobName(pr.job)||'—';
+  goTo('s-rate-user');
+}
+
+function setStar(n){
+  selStar=n;
+  document.querySelectorAll('#rate-stars .star').forEach((s,i)=>s.classList.toggle('on',i<n));
+}
+
+async function submitReview(){
+  if(!selStar) return toast(t('err_stars'));
+  const text=($id('rate-text').value||'').trim();
+  if(sb&&me.id&&rateTarget) await sbAddReview(me.id,rateTarget,rateJobId,selStar,text);
+  toast(t('toast_rev'));
+  goBack();
+}
+
+// ── INIT ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  applyLang();
+  fillCitySelects();
+  initTelegram();
+  setTimeout(()=>{
+    if(!me) goTo('s-login');
+  },1500);
+});
+</script>
+</body>
+</html>
